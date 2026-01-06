@@ -58,6 +58,7 @@ export default function GradientScreen() {
         style={styles.logo}
         contentFit="contain"
       />
+      <Text style={styles.tagline}>From face scan to skin wisdom</Text>
       <View style={styles.textOverlay}>
         <Text style={styles.text}>Your Personal skincare</Text>
         <View style={styles.companionRow}>
@@ -108,6 +109,20 @@ const styles = StyleSheet.create({
     left: 20,
     width: 80,
     height: 80,
+    zIndex: 10,
+  },
+  tagline: {
+    position: 'absolute',
+    top: 150,
+    left: 20,
+    fontSize: 12,
+    color: '#E8B4B8',
+    fontWeight: '400',
+    letterSpacing: 0.5,
+    opacity: 0.9,
+    textShadowColor: 'rgba(0, 0, 0, 0.8)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
     zIndex: 10,
   },
   overlay: {
