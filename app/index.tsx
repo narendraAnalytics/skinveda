@@ -1,17 +1,37 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Video, ResizeMode } from 'expo-av';
 import { Image } from 'expo-image';
-import { useRef, useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRef, useState, useEffect } from 'react';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, TouchableWithoutFeedback } from 'react-native';
+import * as NavigationBar from 'expo-navigation-bar';
+import { StatusBar } from 'expo-status-bar';
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('screen');
 
 export default function GradientScreen() {
   const [isMuted, setIsMuted] = useState(true);
+  const [isUIVisible, setIsUIVisible] = useState(false);
   const videoRef = useRef<Video>(null);
 
+  useEffect(() => {
+    NavigationBar.setVisibilityAsync('hidden');
+    NavigationBar.setBehaviorAsync('overlay-swipe');
+    NavigationBar.setBackgroundColorAsync('#000000');
+  }, []);
+
+  const toggleUI = () => {
+    setIsUIVisible(!isUIVisible);
+    if (isUIVisible) {
+      NavigationBar.setVisibilityAsync('hidden');
+    } else {
+      NavigationBar.setVisibilityAsync('visible');
+    }
+  };
+
   return (
-    <View style={styles.container}>
+    <TouchableWithoutFeedback onPress={toggleUI}>
+      <View style={styles.container}>
+      <StatusBar style="light" translucent />
       <Video
         ref={videoRef}
         source={require('../public/video/video.mp4')}
@@ -49,7 +69,8 @@ export default function GradientScreen() {
           <Text style={styles.buttonText}>Glow Guide</Text>
         </TouchableOpacity>
       </View>
-    </View>
+      </View>
+    </TouchableWithoutFeedback>
   );
 }
 
