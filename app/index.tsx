@@ -1,10 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Video, ResizeMode } from 'expo-av';
+import { ResizeMode, Video } from 'expo-av';
 import { Image } from 'expo-image';
-import { useRef, useState, useEffect } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, TouchableWithoutFeedback } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
+import { useEffect, useRef, useState } from 'react';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -53,6 +53,11 @@ export default function GradientScreen() {
           color="#E8B4B8"
         />
       </TouchableOpacity>
+      <Image
+        source={require('../public/images/logoskinveda.png')}
+        style={styles.logo}
+        contentFit="contain"
+      />
       <View style={styles.textOverlay}>
         <Text style={styles.text}>Your Personal skincare</Text>
         <View style={styles.companionRow}>
@@ -96,6 +101,14 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 80,
+    height: 80,
+    zIndex: 10,
   },
   overlay: {
     position: 'absolute',
