@@ -1,17 +1,38 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Video, ResizeMode } from 'expo-av';
 import { Image } from 'expo-image';
+import { useRef, useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
 export default function GradientScreen() {
+  const [isMuted, setIsMuted] = useState(true);
+  const videoRef = useRef<Video>(null);
+
   return (
     <View style={styles.container}>
-      <Image
-        source={require('../public/images/bannerimage.png')}
-        style={styles.fullScreenImage}
-        contentFit="cover"
+      <Video
+        ref={videoRef}
+        source={require('../public/video/video.mp4')}
+        style={styles.fullScreenVideo}
+        resizeMode={ResizeMode.COVER}
+        shouldPlay={true}
+        isLooping={true}
+        isMuted={isMuted}
+        useNativeControls={false}
       />
       <View style={styles.overlay} />
+      <TouchableOpacity
+        style={styles.muteButton}
+        onPress={() => setIsMuted(!isMuted)}
+      >
+        <MaterialCommunityIcons
+          name={isMuted ? 'volume-mute' : 'volume-high'}
+          size={24}
+          color="#E8B4B8"
+        />
+      </TouchableOpacity>
       <View style={styles.textOverlay}>
         <Text style={styles.text}>Your Personal skincare</Text>
         <View style={styles.companionRow}>
@@ -37,12 +58,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  fullScreenImage: {
+  fullScreenVideo: {
     position: 'absolute',
     top: 0,
     left: 0,
     width: width,
     height: height,
+  },
+  muteButton: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    padding: 12,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   overlay: {
     position: 'absolute',

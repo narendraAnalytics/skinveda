@@ -8,6 +8,10 @@
     "scheme": "skinveda",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "assetBundlePatterns": [
+      "**/*",
+      "public/**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
