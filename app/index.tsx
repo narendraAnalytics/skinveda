@@ -5,6 +5,8 @@ import * as NavigationBar from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { useUser } from '@clerk/clerk-expo';
+import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -12,6 +14,8 @@ export default function GradientScreen() {
   const [isMuted, setIsMuted] = useState(true);
   const [isUIVisible, setIsUIVisible] = useState(false);
   const videoRef = useRef<Video>(null);
+  const router = useRouter();
+  const { isSignedIn, user, isLoaded } = useUser();
 
   useEffect(() => {
     NavigationBar.setVisibilityAsync('hidden');
@@ -71,9 +75,24 @@ export default function GradientScreen() {
         </View>
       </View>
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Glow Guide</Text>
-        </TouchableOpacity>
+        {!isLoaded ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        ) : isSignedIn && user ? (
+          <View style={styles.welcomeContainer}>
+            <Text style={styles.welcomeText}>
+              Welcome, {user.username || user.firstName || 'there'}
+            </Text>
+          </View>
+        ) : (
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => router.push('/sign-up')}
+          >
+            <Text style={styles.buttonText}>Glow Guide</Text>
+          </TouchableOpacity>
+        )}
       </View>
       </View>
     </TouchableWithoutFeedback>
@@ -182,6 +201,41 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: '#E8B4B8',
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  welcomeContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    borderWidth: 2,
+    borderColor: '#E8B4B8',
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 35,
+    shadowColor: '#E8B4B8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  welcomeText: {
+    color: '#E8B4B8',
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 1,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    borderWidth: 2,
+    borderColor: 'rgba(232, 180, 184, 0.5)',
+    borderRadius: 25,
+    paddingVertical: 15,
+    paddingHorizontal: 35,
+  },
+  loadingText: {
+    color: 'rgba(232, 180, 184, 0.7)',
     fontSize: 18,
     fontWeight: '600',
     letterSpacing: 1,
