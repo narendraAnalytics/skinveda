@@ -79,6 +79,18 @@ export default function GradientScreen() {
           color="#E8B4B8"
         />
       </TouchableOpacity>
+      {isSignedIn && user && (
+        <TouchableOpacity
+          style={styles.profileButtonTop}
+          onPress={() => router.push('/profile')}
+        >
+          <MaterialCommunityIcons
+            name="account-circle"
+            size={24}
+            color="#E8B4B8"
+          />
+        </TouchableOpacity>
+      )}
       <Image
         source={require('../public/images/logoskinveda.png')}
         style={styles.logo}
@@ -105,11 +117,6 @@ export default function GradientScreen() {
           </View>
         ) : isSignedIn && user ? (
           <>
-            <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeText}>
-                Welcome, {user.username || user.firstName || 'there'}
-              </Text>
-            </View>
             <TouchableOpacity
               style={styles.signOutButton}
               onPress={handleSignOut}
@@ -122,6 +129,11 @@ export default function GradientScreen() {
               />
               <Text style={styles.signOutText}>Sign Out</Text>
             </TouchableOpacity>
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeText}>
+                Welcome, {user.username || user.firstName || 'there'}
+              </Text>
+            </View>
           </>
         ) : (
           <TouchableOpacity
@@ -272,6 +284,18 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1,
     textAlign: 'center',
+  },
+  profileButtonTop: {
+    position: 'absolute',
+    top: 50,
+    left: '50%',
+    marginLeft: -22,
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    padding: 12,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   signOutButton: {
     flexDirection: 'row',
