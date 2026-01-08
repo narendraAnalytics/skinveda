@@ -1,23 +1,23 @@
-import * as React from 'react';
-import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Alert,
-  Modal,
-  ActivityIndicator
-} from 'react-native';
-import { useSignUp, useOAuth } from '@clerk/clerk-expo';
+import OAuthButton from '@/components/OAuthButton';
+import { useOAuth, useSignUp } from '@clerk/clerk-expo';
+import * as Linking from 'expo-linking';
 import { Link, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-import OAuthButton from '@/components/OAuthButton';
+import * as React from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -349,7 +349,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 5,
   },
   buttonText: {
     color: '#E8B4B8',
@@ -404,7 +403,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4,
     shadowRadius: 12,
-    elevation: 8,
   },
   modalTitle: {
     fontSize: 24,

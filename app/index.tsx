@@ -117,6 +117,11 @@ export default function GradientScreen() {
           </View>
         ) : isSignedIn && user ? (
           <>
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeText}>
+                Welcome, {user.username || user.firstName || 'there'}
+              </Text>
+            </View>
             <TouchableOpacity
               style={styles.signOutButton}
               onPress={handleSignOut}
@@ -129,16 +134,12 @@ export default function GradientScreen() {
               />
               <Text style={styles.signOutText}>Sign Out</Text>
             </TouchableOpacity>
-            <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeText}>
-                Welcome, {user.username || user.firstName || 'there'}
-              </Text>
-            </View>
           </>
         ) : (
           <TouchableOpacity
             style={styles.button}
             onPress={() => router.push('/sign-up')}
+            activeOpacity={0.7} 
           >
             <Text style={styles.buttonText}>Glow Guide</Text>
           </TouchableOpacity>
@@ -241,11 +242,11 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 35,
+    borderWidth: 0,           // ADD THIS
     shadowColor: '#E8B4B8',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 5,
   },
   buttonText: {
     color: '#E8B4B8',
@@ -263,7 +264,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 5,
   },
   welcomeText: {
     color: '#E8B4B8',
@@ -309,7 +309,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 4,
   },
   signOutText: {
     color: '#FF6B6B',
