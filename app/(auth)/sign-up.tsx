@@ -33,7 +33,7 @@ export default function SignUpScreen() {
   const [password, setPassword] = React.useState('');
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState('');
-  const [oauthLoading, setOauthLoading] = React.useState(false);
+  const [loadingProvider, setLoadingProvider] = React.useState<'google' | 'github' | 'linkedin' | null>(null);
   const [oauthSignUpData, setOauthSignUpData] = React.useState<any>(null);
   const [showUsernameModal, setShowUsernameModal] = React.useState(false);
   const [oauthUsername, setOauthUsername] = React.useState('');
@@ -86,7 +86,7 @@ export default function SignUpScreen() {
 
   const handleOAuthSignUp = async (provider: 'google' | 'github' | 'linkedin') => {
     try {
-      setOauthLoading(true);
+      setLoadingProvider(provider);
 
       const oauthFlow = provider === 'google' ? googleOAuth
                       : provider === 'github' ? githubOAuth
@@ -110,7 +110,7 @@ export default function SignUpScreen() {
       Alert.alert('Error', err.errors?.[0]?.message || 'OAuth sign-up failed');
       console.error(JSON.stringify(err, null, 2));
     } finally {
-      setOauthLoading(false);
+      setLoadingProvider(null);
     }
   };
 
@@ -118,8 +118,6 @@ export default function SignUpScreen() {
     if (!oauthSignUpData) return;
 
     try {
-      setOauthLoading(true);
-
       // Update sign-up with username
       const result = await oauthSignUpData.update({
         username: oauthUsername,
@@ -137,7 +135,7 @@ export default function SignUpScreen() {
       Alert.alert('Error', err.errors?.[0]?.message || 'Failed to complete profile');
       console.error(JSON.stringify(err, null, 2));
     } finally {
-      setOauthLoading(false);
+      setLoadingProvider(null);
     }
   };
 
@@ -218,20 +216,20 @@ export default function SignUpScreen() {
           <OAuthButton
             provider="google"
             onPress={() => handleOAuthSignUp('google')}
-            disabled={oauthLoading}
-            loading={oauthLoading}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'google'}
           />
           <OAuthButton
             provider="github"
             onPress={() => handleOAuthSignUp('github')}
-            disabled={oauthLoading}
-            loading={oauthLoading}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'github'}
           />
           <OAuthButton
             provider="linkedin"
             onPress={() => handleOAuthSignUp('linkedin')}
-            disabled={oauthLoading}
-            loading={oauthLoading}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'linkedin'}
           />
 
           <View style={styles.footer}>
@@ -252,7 +250,7 @@ export default function SignUpScreen() {
         animationType="fade"
         onRequestClose={() => {
           // Prevent closing by back button while loading
-          if (!oauthLoading) {
+          if (loadingProvider === null) {
             setShowUsernameModal(false);
             setOauthUsername('');
           }
@@ -272,23 +270,23 @@ export default function SignUpScreen() {
               placeholder="Username"
               placeholderTextColor="rgba(232, 180, 184, 0.5)"
               onChangeText={setOauthUsername}
-              editable={!oauthLoading}
+              editable={loadingProvider === null}
               maxLength={30}
             />
 
             <TouchableOpacity
-              style={[styles.button, oauthLoading && styles.buttonLoading]}
+              style={[styles.button, loadingProvider !== null && styles.buttonLoading]}
               onPress={completeOAuthSignUp}
-              disabled={!oauthUsername.trim() || oauthLoading}
+              disabled={!oauthUsername.trim() || loadingProvider !== null}
             >
-              {oauthLoading ? (
+              {loadingProvider !== null ? (
                 <ActivityIndicator size="small" color="#E8B4B8" />
               ) : (
                 <Text style={styles.buttonText}>Create Account</Text>
               )}
             </TouchableOpacity>
 
-            {!oauthLoading && (
+            {loadingProvider === null && (
               <TouchableOpacity onPress={() => {
                 setShowUsernameModal(false);
                 setOauthUsername('');

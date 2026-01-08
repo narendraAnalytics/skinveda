@@ -1,21 +1,21 @@
-import { useSignIn, useOAuth } from '@clerk/clerk-expo';
+import OAuthButton from '@/components/OAuthButton';
+import { useOAuth, useSignIn } from '@clerk/clerk-expo';
+import * as Linking from 'expo-linking';
 import { Link, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import * as WebBrowser from 'expo-web-browser';
+import React from 'react';
 import {
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  StyleSheet,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-import OAuthButton from '@/components/OAuthButton';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -28,7 +28,7 @@ export default function SignInScreen() {
 
   const [identifier, setIdentifier] = React.useState('');
   const [password, setPassword] = React.useState('');
-  const [oauthLoading, setOauthLoading] = React.useState(false);
+  const [loadingProvider, setLoadingProvider] = React.useState<'google' | 'github' | 'linkedin' | null>(null);
 
   React.useEffect(() => {
     WebBrowser.warmUpAsync();
@@ -61,7 +61,7 @@ export default function SignInScreen() {
 
   const handleOAuthSignIn = async (provider: 'google' | 'github' | 'linkedin') => {
     try {
-      setOauthLoading(true);
+      setLoadingProvider(provider);
 
       const oauthFlow = provider === 'google' ? googleOAuth
                       : provider === 'github' ? githubOAuth
@@ -81,7 +81,7 @@ export default function SignInScreen() {
       Alert.alert('Error', err.errors?.[0]?.message || 'OAuth sign-in failed');
       console.error(JSON.stringify(err, null, 2));
     } finally {
-      setOauthLoading(false);
+      setLoadingProvider(null);
     }
   };
 
@@ -128,20 +128,20 @@ export default function SignInScreen() {
           <OAuthButton
             provider="google"
             onPress={() => handleOAuthSignIn('google')}
-            disabled={oauthLoading}
-            loading={oauthLoading}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'google'}
           />
           <OAuthButton
             provider="github"
             onPress={() => handleOAuthSignIn('github')}
-            disabled={oauthLoading}
-            loading={oauthLoading}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'github'}
           />
           <OAuthButton
             provider="linkedin"
             onPress={() => handleOAuthSignIn('linkedin')}
-            disabled={oauthLoading}
-            loading={oauthLoading}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'linkedin'}
           />
 
           <View style={styles.footer}>
@@ -204,7 +204,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
-    elevation: 5,
   },
   buttonText: {
     color: '#E8B4B8',
