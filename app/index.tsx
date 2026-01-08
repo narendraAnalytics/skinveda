@@ -4,6 +4,7 @@ import { ResizeMode, Video } from 'expo-av';
 import { Image } from 'expo-image';
 import * as NavigationBar from 'expo-navigation-bar';
 import { useRouter } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
@@ -13,6 +14,9 @@ const { width, height } = Dimensions.get('screen');
 export default function GradientScreen() {
   const [isMuted, setIsMuted] = useState(true);
   const [isUIVisible, setIsUIVisible] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [logoLoaded, setLogoLoaded] = useState(false);
+  const [flowerLoaded, setFlowerLoaded] = useState(false);
   const videoRef = useRef<Video>(null);
   const router = useRouter();
   const { isSignedIn, user, isLoaded } = useUser();
@@ -23,6 +27,13 @@ export default function GradientScreen() {
     NavigationBar.setBehaviorAsync('overlay-swipe');
     NavigationBar.setBackgroundColorAsync('#000000');
   }, []);
+
+  // Hide splash screen when all assets are loaded
+  useEffect(() => {
+    if (videoLoaded && logoLoaded && flowerLoaded && isLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [videoLoaded, logoLoaded, flowerLoaded, isLoaded]);
 
   const toggleUI = () => {
     setIsUIVisible(!isUIVisible);
@@ -54,6 +65,8 @@ export default function GradientScreen() {
         isLooping={true}
         isMuted={isMuted}
         useNativeControls={false}
+        onLoad={() => setVideoLoaded(true)}
+        onReadyForDisplay={() => setVideoLoaded(true)}
       />
       <View style={styles.overlay} />
       <TouchableOpacity
@@ -70,6 +83,7 @@ export default function GradientScreen() {
         source={require('../public/images/logoskinveda.png')}
         style={styles.logo}
         contentFit="contain"
+        onLoad={() => setLogoLoaded(true)}
       />
       <Text style={styles.tagline}>From face scan to skin wisdom</Text>
       <View style={styles.textOverlay}>
@@ -80,6 +94,7 @@ export default function GradientScreen() {
             source={require('../public/images/flowerimage.png')}
             style={styles.flowerIcon}
             contentFit="contain"
+            onLoad={() => setFlowerLoaded(true)}
           />
         </View>
       </View>
@@ -125,7 +140,7 @@ export default function GradientScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#000000',
   },
   fullScreenVideo: {
     position: 'absolute',
@@ -211,8 +226,6 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderWidth: 2,
-    borderColor: '#E8B4B8',
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 35,
@@ -231,8 +244,6 @@ const styles = StyleSheet.create({
   },
   welcomeContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderWidth: 2,
-    borderColor: '#E8B4B8',
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 35,
@@ -251,8 +262,6 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    borderWidth: 2,
-    borderColor: 'rgba(232, 180, 184, 0.5)',
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 35,
@@ -268,8 +277,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 107, 107, 0.25)',
-    borderWidth: 2,
-    borderColor: '#FF6B6B',
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 25,

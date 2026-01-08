@@ -188,8 +188,6 @@ const styles = StyleSheet.create({
   },
   input: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: '#E8B4B8',
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
@@ -198,8 +196,6 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: 'rgba(232, 180, 184, 0.2)',
-    borderWidth: 2,
-    borderColor: '#E8B4B8',
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 35,
