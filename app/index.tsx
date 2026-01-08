@@ -1,12 +1,12 @@
+import { useAuth, useUser } from '@clerk/clerk-expo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ResizeMode, Video } from 'expo-av';
 import { Image } from 'expo-image';
 import * as NavigationBar from 'expo-navigation-bar';
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import { useUser } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -16,6 +16,7 @@ export default function GradientScreen() {
   const videoRef = useRef<Video>(null);
   const router = useRouter();
   const { isSignedIn, user, isLoaded } = useUser();
+  const { signOut } = useAuth();
 
   useEffect(() => {
     NavigationBar.setVisibilityAsync('hidden');
@@ -29,6 +30,14 @@ export default function GradientScreen() {
       NavigationBar.setVisibilityAsync('hidden');
     } else {
       NavigationBar.setVisibilityAsync('visible');
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out error:', error);
     }
   };
 
@@ -80,11 +89,25 @@ export default function GradientScreen() {
             <Text style={styles.loadingText}>Loading...</Text>
           </View>
         ) : isSignedIn && user ? (
-          <View style={styles.welcomeContainer}>
-            <Text style={styles.welcomeText}>
-              Welcome, {user.username || user.firstName || 'there'}
-            </Text>
-          </View>
+          <>
+            <View style={styles.welcomeContainer}>
+              <Text style={styles.welcomeText}>
+                Welcome, {user.username || user.firstName || 'there'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.signOutButton}
+              onPress={handleSignOut}
+            >
+              <MaterialCommunityIcons
+                name="logout"
+                size={18}
+                color="#FF6B6B"
+                style={{ marginRight: 6 }}
+              />
+              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
+          </>
         ) : (
           <TouchableOpacity
             style={styles.button}
@@ -154,7 +177,7 @@ const styles = StyleSheet.create({
   },
   textOverlay: {
     position: 'absolute',
-    bottom: 185,
+    bottom: 250,
     left: 30,
     right: 0,
     alignItems: 'flex-start',
@@ -240,5 +263,27 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1,
     textAlign: 'center',
+  },
+  signOutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 107, 107, 0.25)',
+    borderWidth: 2,
+    borderColor: '#FF6B6B',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    marginTop: 15,
+    shadowColor: '#FF6B6B',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  signOutText: {
+    color: '#FF6B6B',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.8,
   },
 });

@@ -3,7 +3,8 @@
     "allow": [
       "Bash(tree:*)",
       "WebSearch",
-      "WebFetch(domain:clerk.com)"
+      "WebFetch(domain:clerk.com)",
+      "Bash(ls:*)"
     ]
   }
 }

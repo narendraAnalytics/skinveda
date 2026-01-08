@@ -1,4 +1,4 @@
-import { useSignIn, useSSO } from '@clerk/clerk-expo';
+import { useSignIn, useOAuth } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 import {
   Text,
@@ -21,7 +21,9 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
-  const { startSSOFlow } = useSSO();
+  const googleOAuth = useOAuth({ strategy: 'oauth_google' });
+  const githubOAuth = useOAuth({ strategy: 'oauth_github' });
+  const linkedinOAuth = useOAuth({ strategy: 'oauth_linkedin_oidc' });
   const router = useRouter();
 
   const [identifier, setIdentifier] = React.useState('');
@@ -57,20 +59,23 @@ export default function SignInScreen() {
     }
   };
 
-  const handleOAuthSignIn = async (strategy: 'oauth_google' | 'oauth_github' | 'oauth_linkedin_oidc') => {
+  const handleOAuthSignIn = async (provider: 'google' | 'github' | 'linkedin') => {
     try {
       setOauthLoading(true);
 
-      const { createdSessionId } = await startSSOFlow({
-        strategy,
-        redirectUrl: Linking.createURL('/sign-in', { scheme: 'skinveda' }),
+      const oauthFlow = provider === 'google' ? googleOAuth
+                      : provider === 'github' ? githubOAuth
+                      : linkedinOAuth;
+
+      const { createdSessionId, setActive: oauthSetActive, signIn: oauthSignIn } = await oauthFlow.startOAuthFlow({
+        redirectUrl: Linking.createURL('/(auth)/sign-in', { scheme: 'skinveda' }),
       });
 
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
+      if (createdSessionId && oauthSetActive) {
+        await oauthSetActive({ session: createdSessionId });
         router.replace('/');
       } else {
-        Alert.alert('Error', 'Unable to activate session');
+        Alert.alert('Error', 'OAuth sign-in incomplete');
       }
     } catch (err: any) {
       Alert.alert('Error', err.errors?.[0]?.message || 'OAuth sign-in failed');
@@ -122,19 +127,19 @@ export default function SignInScreen() {
 
           <OAuthButton
             provider="google"
-            onPress={() => handleOAuthSignIn('oauth_google')}
+            onPress={() => handleOAuthSignIn('google')}
             disabled={oauthLoading}
             loading={oauthLoading}
           />
           <OAuthButton
             provider="github"
-            onPress={() => handleOAuthSignIn('oauth_github')}
+            onPress={() => handleOAuthSignIn('github')}
             disabled={oauthLoading}
             loading={oauthLoading}
           />
           <OAuthButton
             provider="linkedin"
-            onPress={() => handleOAuthSignIn('oauth_linkedin_oidc')}
+            onPress={() => handleOAuthSignIn('linkedin')}
             disabled={oauthLoading}
             loading={oauthLoading}
           />

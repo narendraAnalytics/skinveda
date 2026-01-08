@@ -8,9 +8,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert
+  Alert,
+  Modal,
+  ActivityIndicator
 } from 'react-native';
-import { useSignUp, useSSO } from '@clerk/clerk-expo';
+import { useSignUp, useOAuth } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
@@ -21,7 +23,9 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
-  const { startSSOFlow } = useSSO();
+  const googleOAuth = useOAuth({ strategy: 'oauth_google' });
+  const githubOAuth = useOAuth({ strategy: 'oauth_github' });
+  const linkedinOAuth = useOAuth({ strategy: 'oauth_linkedin_oidc' });
   const router = useRouter();
 
   const [username, setUsername] = React.useState('');
@@ -30,6 +34,9 @@ export default function SignUpScreen() {
   const [pendingVerification, setPendingVerification] = React.useState(false);
   const [code, setCode] = React.useState('');
   const [oauthLoading, setOauthLoading] = React.useState(false);
+  const [oauthSignUpData, setOauthSignUpData] = React.useState<any>(null);
+  const [showUsernameModal, setShowUsernameModal] = React.useState(false);
+  const [oauthUsername, setOauthUsername] = React.useState('');
 
   React.useEffect(() => {
     WebBrowser.warmUpAsync();
@@ -77,23 +84,57 @@ export default function SignUpScreen() {
     }
   };
 
-  const handleOAuthSignUp = async (strategy: 'oauth_google' | 'oauth_github' | 'oauth_linkedin_oidc') => {
+  const handleOAuthSignUp = async (provider: 'google' | 'github' | 'linkedin') => {
     try {
       setOauthLoading(true);
 
-      const { createdSessionId } = await startSSOFlow({
-        strategy,
-        redirectUrl: Linking.createURL('/sign-up', { scheme: 'skinveda' }),
+      const oauthFlow = provider === 'google' ? googleOAuth
+                      : provider === 'github' ? githubOAuth
+                      : linkedinOAuth;
+
+      const { createdSessionId, setActive: oauthSetActive, signUp: oauthSignUp } = await oauthFlow.startOAuthFlow({
+        redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' }),
       });
 
-      if (createdSessionId && setActive) {
-        await setActive({ session: createdSessionId });
+      if (createdSessionId && oauthSetActive) {
+        await oauthSetActive({ session: createdSessionId });
         router.replace('/');
+      } else if (oauthSignUp) {
+        // Store signUp object and show username modal
+        setOauthSignUpData(oauthSignUp);
+        setShowUsernameModal(true);
       } else {
-        Alert.alert('Error', 'Unable to activate session');
+        Alert.alert('Error', 'OAuth sign-up incomplete');
       }
     } catch (err: any) {
       Alert.alert('Error', err.errors?.[0]?.message || 'OAuth sign-up failed');
+      console.error(JSON.stringify(err, null, 2));
+    } finally {
+      setOauthLoading(false);
+    }
+  };
+
+  const completeOAuthSignUp = async () => {
+    if (!oauthSignUpData) return;
+
+    try {
+      setOauthLoading(true);
+
+      // Update sign-up with username
+      const result = await oauthSignUpData.update({
+        username: oauthUsername,
+      });
+
+      // Check if signup is complete
+      if (result?.status === 'complete' && result.createdSessionId && setActive) {
+        await setActive({ session: result.createdSessionId });
+        setShowUsernameModal(false);
+        router.replace('/');
+      } else {
+        Alert.alert('Error', 'Failed to complete sign-up');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.errors?.[0]?.message || 'Failed to complete profile');
       console.error(JSON.stringify(err, null, 2));
     } finally {
       setOauthLoading(false);
@@ -176,19 +217,19 @@ export default function SignUpScreen() {
 
           <OAuthButton
             provider="google"
-            onPress={() => handleOAuthSignUp('oauth_google')}
+            onPress={() => handleOAuthSignUp('google')}
             disabled={oauthLoading}
             loading={oauthLoading}
           />
           <OAuthButton
             provider="github"
-            onPress={() => handleOAuthSignUp('oauth_github')}
+            onPress={() => handleOAuthSignUp('github')}
             disabled={oauthLoading}
             loading={oauthLoading}
           />
           <OAuthButton
             provider="linkedin"
-            onPress={() => handleOAuthSignUp('oauth_linkedin_oidc')}
+            onPress={() => handleOAuthSignUp('linkedin')}
             disabled={oauthLoading}
             loading={oauthLoading}
           />
@@ -203,6 +244,61 @@ export default function SignUpScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* OAuth Username Modal */}
+      <Modal
+        visible={showUsernameModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => {
+          // Prevent closing by back button while loading
+          if (!oauthLoading) {
+            setShowUsernameModal(false);
+            setOauthUsername('');
+          }
+        }}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Complete Your Profile</Text>
+            <Text style={styles.modalSubtitle}>
+              Choose a username for your account
+            </Text>
+
+            <TextInput
+              style={styles.input}
+              autoCapitalize="none"
+              value={oauthUsername}
+              placeholder="Username"
+              placeholderTextColor="rgba(232, 180, 184, 0.5)"
+              onChangeText={setOauthUsername}
+              editable={!oauthLoading}
+              maxLength={30}
+            />
+
+            <TouchableOpacity
+              style={[styles.button, oauthLoading && styles.buttonLoading]}
+              onPress={completeOAuthSignUp}
+              disabled={!oauthUsername.trim() || oauthLoading}
+            >
+              {oauthLoading ? (
+                <ActivityIndicator size="small" color="#E8B4B8" />
+              ) : (
+                <Text style={styles.buttonText}>Create Account</Text>
+              )}
+            </TouchableOpacity>
+
+            {!oauthLoading && (
+              <TouchableOpacity onPress={() => {
+                setShowUsernameModal(false);
+                setOauthUsername('');
+              }}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -293,5 +389,49 @@ const styles = StyleSheet.create({
     color: 'rgba(232, 180, 184, 0.7)',
     fontSize: 14,
     marginHorizontal: 10,
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: '#1a1a1a',
+    borderWidth: 2,
+    borderColor: '#E8B4B8',
+    borderRadius: 20,
+    padding: 25,
+    width: '100%',
+    maxWidth: 350,
+    shadowColor: '#E8B4B8',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#E8B4B8',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: 'rgba(232, 180, 184, 0.6)',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  cancelText: {
+    color: 'rgba(232, 180, 184, 0.5)',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 15,
+  },
+  buttonLoading: {
+    opacity: 0.7,
   },
 });
