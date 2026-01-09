@@ -1,14 +1,15 @@
+import { AnalysisResult, UserProfile } from '@/types/wizard';
 import { useAuth } from '@clerk/clerk-expo';
-import { UserProfile, AnalysisResult } from '@/types/wizard';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:3000';
 
 export class ApiClient {
-  constructor(private getToken: () => Promise<string | null>) {}
+  constructor(private getToken: () => Promise<string | null>) { }
 
   private async request(endpoint: string, options: RequestInit = {}) {
     const token = await this.getToken();
 
+    console.log(`[API Request] Calling: ${API_URL}${endpoint}`);
     const response = await fetch(`${API_URL}${endpoint}`, {
       ...options,
       headers: {

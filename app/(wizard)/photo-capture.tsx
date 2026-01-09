@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Image } from 'react-native';
-import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
 import { CameraView } from '@/components/wizard/CameraView';
 import { ProgressBar } from '@/components/wizard/ProgressBar';
+import { WizardColors } from '@/constants/theme';
 import { useWizard } from '@/contexts/WizardContext';
 import { useApiClient } from '@/services/apiClient';
-import { WizardColors } from '@/constants/theme';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function PhotoCaptureScreen() {
   const router = useRouter();
@@ -47,9 +47,12 @@ export default function PhotoCaptureScreen() {
       const result = await apiClient.analyzeSkin(profile, base64Image);
       setAnalysis(result);
       router.push('/(wizard)/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Analysis failed:', error);
-      alert('Analysis failed. Please try again.');
+      const message = error.message === 'Network request failed'
+        ? 'Could not connect to analysis server. Please ensure the backend is running and your EXPO_PUBLIC_BACKEND_URL is correct.'
+        : `Analysis failed: ${error.message}`;
+      alert(message);
     } finally {
       setIsAnalyzing(false);
     }

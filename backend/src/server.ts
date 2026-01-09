@@ -1,10 +1,10 @@
+import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
-import cors from 'cors';
 import apiRoutes from './routes/api';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 const allowedOrigins = [
   'http://localhost:8081',
@@ -13,13 +13,8 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
+  origin: true, // Allow all origins in dev/test for easier mobile connectivity
+  credentials: true
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -35,6 +30,6 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Backend running on http://0.0.0.0:${PORT}`);
 });

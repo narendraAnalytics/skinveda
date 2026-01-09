@@ -24,23 +24,40 @@ Skinveda is a modern React Native mobile application built with Expo, designed t
 ```text
 skinveda/
 ├── app/                  # Expo Router Pages
-│   ├── _layout.tsx       # Root layout, ClerkProvider, Splash management
+│   ├── _layout.tsx       # Root layout, ClerkProvider, Stack definition
 │   ├── index.tsx         # Landing page with video background
 │   ├── (auth)/           # Authentication route group
 │   │   ├── _layout.tsx   # Auth guard (redirects if signed in)
 │   │   ├── sign-in.tsx   # Custom Sign-in flow
 │   │   └── sign-up.tsx   # Custom Sign-up flow with OAuth modal
+│   ├── (wizard)/         # 7-Step Skin Analysis Wizard
+│   │   ├── _layout.tsx   # Wizard layout with WizardProvider
+│   │   ├── welcome.tsx   # Step 1: Introduction
+│   │   ├── profile-name.tsx # Step 2: Name
+│   │   ├── profile-bio.tsx  # Step 3: Age/Gender
+│   │   ├── skin-details.tsx # Step 4: Skin Type
+│   │   ├── concerns-health.tsx # Step 5: Health Data
+│   │   ├── photo-capture.tsx # Step 6: Camera Capture
+│   │   └── dashboard.tsx    # Step 7: Results & Recommendations
 │   └── profile.tsx       # User profile screen
+├── backend/              # Node.js / Express Backend
+│   ├── src/
+│   │   ├── controllers/  # API Logic (Analysis, TTS)
+│   │   ├── services/     # AI Engine (Gemini)
+│   │   ├── routes/       # API Endpoints
+│   │   └── server.ts     # Main Express entry point
 ├── components/           # Reusable UI Components
 │   ├── ui/               # Primary UI primitives
+│   ├── wizard/           # Wizard-specific components
 │   ├── OAuthButton.tsx   # Generic button for social auth
 │   └── themed-text.tsx   # Theme-aware typography
+├── contexts/             # State Management (WizardContext)
+├── services/             # Frontend API client
 ├── constants/            # Design system, Colors, Layout constants
 ├── hooks/                # Custom React hooks (Theme, Color scheme)
 ├── assets/               # Local images and fonts
 ├── public/               # Static assets
-│   └── video/            # Landing video background
-└── .env                  # Environment variables (Clerk keys)
+└── .env                  # Environment variables
 ```
 
 ---
