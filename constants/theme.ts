@@ -51,3 +51,37 @@ export const Fonts = Platform.select({
     mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   },
 });
+
+export const WizardColors = {
+  primary: '#E8B4B8',           // Existing primary
+  emerald: {
+    50: '#ECFDF5',
+    500: '#10B981',
+    600: '#059669',
+  },
+  slate: {
+    100: '#F1F5F9',
+    500: '#64748B',
+    800: '#1E293B',
+    900: '#0F172A',
+  },
+  overlay: 'rgba(0, 0, 0, 0.4)',
+  cardBg: 'rgba(255, 255, 255, 0.1)',
+  success: '#10B981',
+  warning: '#F59E0B',
+};
+
+export const WizardFonts = {
+  heading: {
+    fontSize: 28,
+    fontWeight: '700' as const,
+  },
+  subheading: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+  },
+  body: {
+    fontSize: 16,
+    fontWeight: '400' as const,
+  },
+};

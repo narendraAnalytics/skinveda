@@ -4,7 +4,13 @@
       "Bash(tree:*)",
       "WebSearch",
       "WebFetch(domain:clerk.com)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\ES\\\\Desktop\\\\2025\\\\skinveda\\\\backend'' -Force\")",
+      "Bash(powershell -Command \"Get-ChildItem -Path ''C:\\\\Users\\\\ES\\\\Desktop\\\\2025\\\\skinveda\\\\workingcode'' -Force\")",
+      "Bash(powershell -Command:*)",
+      "Bash(npx expo-doctor@latest)",
+      "Bash(npm ls:*)",
+      "Bash(test:*)"
     ]
   }
 }

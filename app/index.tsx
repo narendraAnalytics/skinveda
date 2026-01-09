@@ -123,6 +123,13 @@ export default function GradientScreen() {
               </Text>
             </View>
             <TouchableOpacity
+              style={styles.button}
+              onPress={() => router.push('/(wizard)/welcome')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.buttonText}>Start Skin Analysis</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={styles.signOutButton}
               onPress={handleSignOut}
             >
@@ -138,8 +145,8 @@ export default function GradientScreen() {
         ) : (
           <TouchableOpacity
             style={styles.button}
-            onPress={() => router.push('/sign-up')}
-            activeOpacity={0.7} 
+            onPress={() => router.push('/(auth)/sign-up')}
+            activeOpacity={0.7}
           >
             <Text style={styles.buttonText}>Glow Guide</Text>
           </TouchableOpacity>

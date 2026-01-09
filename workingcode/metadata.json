@@ -1,0 +1,8 @@
+{
+  "name": "SkinVeda",
+  "description": "An AI-powered holistic skin healthcare app focusing on natural remedies, yoga, and meditation through voice-guided analysis.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

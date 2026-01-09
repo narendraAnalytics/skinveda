@@ -47,6 +47,7 @@ app/
 ```
 
 **Key Routing Patterns:**
+
 - Root `_layout.tsx` wraps entire app with `<ClerkProvider>` for authentication
 - Auth group `(auth)/_layout.tsx` redirects authenticated users to home (`/`)
 - Home screen (`index.tsx`) shows different UI based on `isSignedIn` state
@@ -54,11 +55,13 @@ app/
 ### Authentication System (Clerk)
 
 **Setup:**
+
 - Clerk provider initialized in `app/_layout.tsx` with token caching via `expo-secure-store`
 - Environment variable required: `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`
 - Deep linking scheme: `skinveda` (for OAuth redirects)
 
 **Supported Authentication Methods:**
+
 1. Email/password with email verification code
 2. OAuth providers: Google, GitHub, LinkedIn OIDC
 
@@ -77,10 +80,12 @@ const result = await oauthSignUpData.update({ username: oauthUsername });
 ```
 
 **Authentication Hooks:**
+
 - `useUser()` from `@clerk/clerk-expo` - Access user data and `isSignedIn` state
 - `useAuth()` from `@clerk/clerk-expo` - Access `signOut()` method
 
 **Layout Redirect Pattern:**
+
 ```typescript
 // app/(auth)/_layout.tsx
 const { isSignedIn } = useAuth();
@@ -131,12 +136,14 @@ Light: '#ffffff'                // Light backgrounds
 ### UI Patterns
 
 **Button Styling:**
+
 - Border: 2px solid with theme color
 - Border radius: 20-25px
 - Shadow: Colored shadow matching border (shadowColor + elevation)
 - Semi-transparent background
 
 **Landing Page (app/index.tsx):**
+
 - Full-screen video background (`public/video/video.mp4`)
 - Muted by default with toggle button (top-right)
 - Logo positioned top-left
@@ -145,6 +152,7 @@ Light: '#ffffff'                // Light backgrounds
 - Tap screen to toggle navigation bar visibility
 
 **Auth Screens:**
+
 - Dark background (#1a1a1a)
 - Semi-transparent input fields with pink borders
 - Email verification flow for standard sign-up
@@ -166,6 +174,7 @@ EXPO_PUBLIC_API_URL=
 ### OAuth Configuration
 
 OAuth redirect URLs must use the custom scheme:
+
 ```typescript
 redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' })
 ```
@@ -259,16 +268,19 @@ skinveda/
 ## Platform-Specific Notes
 
 ### Android
+
 - Edge-to-edge rendering enabled
 - Adaptive icons configured
 - Predictive back gesture disabled
 - Navigation bar hidden on landing page
 
 ### iOS
+
 - Supports tablet layout
 - Standard status bar behavior
 
 ### Web
+
 - Static output build
 - Color scheme detection via `use-color-scheme.web.ts`
 
@@ -323,3 +335,164 @@ const backgroundColor = useThemeColor({}, 'background');
 - Backend endpoints to be implemented
 - Consider adding analytics/error tracking
 - Placeholder for face scan feature (core value proposition)
+
+---
+
+# Voice-Enabled Multi-Step Skin Analysis Dashboard Implementation Plan
+
+## Overview
+
+Create a comprehensive 7-step wizard with AI-powered skin analysis, voice narration, camera capture, and results dashboard. Implementation uses Node.js backend with Gemini API integration and React Native frontend with Expo SDK 54.
+
+---
+
+## User Decisions
+
+- ✅ Full Node.js backend server (API keys secured server-side)
+- ✅ Complete 7-step wizard flow (Welcome → Profile → Skin Details → Health → Camera → Analysis → Dashboard)
+- ✅ Floating voice button with TTS narration (Gemini 2.5-flash-preview-tts)
+- ✅ In-app camera with face guide overlay (expo-camera)
+- ✅ Modern fonts (Inter + Poppins) and polished dashboard design
+
+---
+
+## Architecture Summary
+
+### Backend (Express + TypeScript)
+
+**Location:** `backend/` folder with existing `.env` (GEMINI_API_KEY, CLERK_SECRET_KEY)
+
+**Key Components:**
+
+- Express server with Clerk authentication middleware
+- Port `geminiService.ts` from workingcode (analyzeSkin + getTTS methods)
+- API endpoints: `/api/analyze`, `/api/tts`
+- CORS config for Expo dev server + production domains
+
+### Frontend (React Native + Expo Router)
+
+**Location:** New `app/(wizard)/` route group
+
+**Key Components:**
+
+- 7 wizard screens with shared WizardContext state management
+- Camera component with face guide overlay (oval + scanning animation)
+- Voice button component using expo-av for TTS audio playback
+- Dashboard screen with metric bars, cards, and recommendations sections
+
+---
+
+## Implementation Steps
+
+### PHASE 1: Backend Setup (Priority: High)
+
+#### 1.1 Initialize Backend Project
+
+```bash
+cd backend
+npm init -y
+```
+
+**Install Dependencies:**
+
+```bash
+npm install express@4.18.2 typescript@5.3.3 @types/node @types/express \
+  @clerk/clerk-sdk-node@4.13.0 cors @types/cors dotenv winston zod
+
+npm install --save-dev nodemon ts-node
+```
+
+**Files to Create:**
+
+- `backend/package.json` - Add scripts: `"start": "node dist/server.js"`, `"dev": "nodemon src/server.ts"`, `"build": "tsc"`
+- `backend/tsconfig.json` - TypeScript config (target: ES2020, module: commonjs, outDir: dist)
+- `backend/nodemon.json` - Watch `src/**/*.ts`, exec `ts-node src/server.ts`
+
+#### 1.2 Port Types & Services from workingcode
+
+**Copy and adapt these files:**
+
+1. **`backend/src/types/index.ts`**
+   - Port from `workingcode/types.ts` (UserProfile, AnalysisResult, HealthData interfaces)
+   - Keep exact structure - no changes needed
+
+2. **`backend/src/services/geminiService.ts`**
+   - Port from `workingcode/services/geminiService.ts` (SkinAnalysisService class)
+   - Change line 9: `process.env.API_KEY` → `process.env.GEMINI_API_KEY`
+   - Keep exact prompt (lines 13-34) - includes health data conditioning logic
+   - Keep exact response schema (lines 49-97) - guarantees typed JSON
+   - Keep both methods: `analyzeSkin()` and `getTTS()`
+
+See the full implementation plan in the sections below for complete details on all 7 phases, including:
+
+- Frontend foundation with WizardContext
+- Wizard screens and components
+- Camera integration with face guide
+- Dashboard with metrics and recommendations
+- Voice integration with TTS
+- Integration and polish
+
+---
+
+## Critical Files to Create/Modify
+
+### Backend (9 New Files)
+
+1. `backend/src/server.ts` - Express app with CORS and auth
+2. `backend/src/middleware/auth.ts` - Clerk JWT verification
+3. `backend/src/services/geminiService.ts` - AI analysis service
+4. `backend/src/controllers/analysisController.ts` - Analysis endpoint
+5. `backend/src/controllers/ttsController.ts` - TTS endpoint
+6. `backend/src/routes/api.ts` - API routes
+7. `backend/src/types/index.ts` - Type definitions
+8. `backend/package.json` - Dependencies
+9. `backend/tsconfig.json` - TypeScript config
+
+Excellent! 🎉 Phase 1 Backend Setup is now complete!
+
+### Frontend (20 New Files)
+
+1. `app/(wizard)/_layout.tsx` - Wizard wrapper with context
+2. `app/(wizard)/welcome.tsx` - Step 1: Welcome screen
+3. `app/(wizard)/profile-name.tsx` - Step 2: Name input
+4. `app/(wizard)/profile-bio.tsx` - Step 3: Age + Gender
+5. `app/(wizard)/skin-details.tsx` - Step 4: Skin type + sensitivity
+6. `app/(wizard)/concerns-health.tsx` - Step 5: Concerns + health data
+7. `app/(wizard)/photo-capture.tsx` - Step 6: Camera/upload
+8. `app/(wizard)/dashboard.tsx` - Step 7: Results dashboard
+9. `contexts/WizardContext.tsx` - State management with AsyncStorage
+10. `services/apiClient.ts` - Backend API client
+11. `types/wizard.ts` - Type definitions
+12. `constants/wizardOptions.ts` - UI options and text
+13-20. Wizard UI components (ProgressBar, StepContainer, SelectionButton, CameraView, VoiceButton, MetricBar, MetricCard, RecommendationCard)
+
+### Frontend (3 Files to Modify)
+
+1. `app/index.tsx` - Wire "Glow Guide" button to `/wizard/welcome`
+2. `constants/theme.ts` - Add WizardColors and WizardFonts
+3. `.env` - Add `EXPO_PUBLIC_BACKEND_URL=http://localhost:3000`
+
+---
+
+## Timeline Estimate
+
+- **Phase 1 (Backend):** 1-2 days
+- **Phase 2 (Frontend Foundation):** 1 day
+- **Phase 3 (Wizard Screens):** 2 days
+- **Phase 4 (Camera):** 1 day
+- **Phase 5 (Dashboard):** 2 days
+- **Phase 6 (Voice):** 1 day
+- **Phase 7 (Integration):** 1 day
+
+**Total: 9-10 days** (full-time development)
+
+---
+
+## Next Steps
+
+1. Start with Phase 1 (Backend setup)
+2. Install dependencies and create folder structure
+3. Port geminiService.ts from workingcode
+4. Build Express server with Clerk auth middleware
+5. Test backend endpoints with curl/Postman
+6. Move to frontend implementation
