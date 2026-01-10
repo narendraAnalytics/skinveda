@@ -117,17 +117,14 @@ export default function GradientScreen() {
           </View>
         ) : isSignedIn && user ? (
           <>
-            <View style={styles.welcomeContainer}>
-              <Text style={styles.welcomeText}>
-                Welcome, {user.username || user.firstName || 'there'}
-              </Text>
-            </View>
             <TouchableOpacity
-              style={styles.button}
+              style={styles.welcomeContainer}
               onPress={() => router.push('/(wizard)/welcome')}
               activeOpacity={0.7}
             >
-              <Text style={styles.buttonText}>Start Skin Analysis</Text>
+              <Text style={styles.welcomeText}>
+                Welcome, {user.username || user.firstName || 'there'}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.signOutButton}

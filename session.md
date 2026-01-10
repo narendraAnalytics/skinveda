@@ -104,5 +104,23 @@ If you see **"Network request failed"** during skin analysis:
 
 ---
 
+## ✅ Session Resolution: Fixing "Network Request Failed"
+
+During this session, we resolved a critical connectivity issue where the mobile app could not reach the skin analysis backend.
+
+### 🔍 Challenge
+- **Error**: `[TypeError: Network request failed]`
+- **Cause**: The application was attempting to call `http://localhost:3000`. On a physical mobile device, `localhost` refers to the phone’s loopback, not the developer's computer, causing the connection to fail.
+
+### 💡 Solution
+1. **IP Identification**: Identified the local network IP via `ipconfig` (**192.168.1.6**).
+2. **Dynamic Configuration**: Updated the main `.env` file to use the local IP:
+   ```bash
+   EXPO_PUBLIC_BACKEND_URL=http://192.168.1.6:3000
+   ```
+3. **Backend Optimization**: Modified `backend/src/server.ts` to listen on all interfaces (`0.0.0.0`) and relaxed CORS to allow seamless mobile-to-PC communication.
+4. **Enhanced Diagnostics**: Added request logging in `apiClient.ts` to verify the active backend URL in real-time.
+
+---
 
 *Last Updated: January 2026*

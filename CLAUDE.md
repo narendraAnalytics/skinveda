@@ -4,14 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Skinveda** is a React Native mobile application built with Expo that provides personalized skincare guidance. The tagline is "From face scan to skin wisdom" - positioning as "Your Personal skincare companion."
+**Skinveda** is a React Native mobile application built with Expo that provides personalized skincare guidance through AI-powered face analysis. The tagline is "From face scan to skin wisdom" - positioning as "Your Personal skincare companion."
 
 - **Framework**: Expo ~54.0.30 with Expo Router for file-based routing
 - **Runtime**: React 19.1.0, React Native 0.81.5
 - **Authentication**: Clerk v2.19.14 with OAuth support (Google, GitHub, LinkedIn)
+- **Backend**: Node.js/Express with TypeScript
+- **AI Engine**: Google Gemini API (gemini-3-flash-preview for analysis, gemini-2.5-flash-preview-tts for voice)
 - **Package**: `com.saasaideveloper.skinveda`
 
 ## Development Commands
+
+### Frontend (Expo)
 
 ```bash
 # Start development server
@@ -30,34 +34,108 @@ npm run lint            # ESLint check
 npm run reset-project   # Moves current code to app-example/
 ```
 
+### Backend (Express)
+
+```bash
+cd backend
+
+# Development (hot reload)
+npm run dev
+
+# Production build
+npm run build           # Compile TypeScript to dist/
+npm start              # Run compiled JavaScript
+
+# One-time setup (already done)
+npm install
+```
+
 ## Architecture Overview
+
+### Dual-Codebase Structure
+
+The project is split into two separate codebases:
+
+1. **Frontend** (root directory): React Native/Expo mobile app
+2. **Backend** (`backend/` directory): Express API server
+
+Both share similar type definitions but maintain independent package.json files.
 
 ### File-Based Routing (Expo Router)
 
-The app uses file-based routing with the following structure:
-
 ```
 app/
-├── _layout.tsx           # Root layout with ClerkProvider
-├── index.tsx             # Landing/home screen
-└── (auth)/               # Auth route group (hidden from URL)
-    ├── _layout.tsx       # Redirect logic for authenticated users
-    ├── sign-in.tsx       # Email/password + OAuth sign in
-    └── sign-up.tsx       # Registration with email verification
+├── _layout.tsx              # Root layout with ClerkProvider
+├── index.tsx                # Landing page with video background
+├── profile.tsx              # User profile view
+├── (auth)/                  # Auth route group (hidden from URL)
+│   ├── _layout.tsx          # Redirect logic for authenticated users
+│   ├── sign-in.tsx          # Email/password + OAuth sign in
+│   └── sign-up.tsx          # Registration with email verification
+└── (wizard)/                # Multi-step skin analysis wizard
+    ├── _layout.tsx          # WizardProvider wrapper, auth guard
+    ├── welcome.tsx          # Step 1: Introduction
+    ├── profile-name.tsx     # Step 2: Name input
+    ├── profile-bio.tsx      # Step 3: Age + Gender
+    ├── skin-details.tsx     # Step 4: Skin type + sensitivity
+    ├── concerns-health.tsx  # Step 5: Concerns + health data
+    ├── photo-capture.tsx    # Step 6: Camera/upload
+    └── dashboard.tsx        # Step 7: AI analysis results
 ```
 
 **Key Routing Patterns:**
 
-- Root `_layout.tsx` wraps entire app with `<ClerkProvider>` for authentication
+- Root `_layout.tsx` wraps entire app with `<ClerkProvider>`
 - Auth group `(auth)/_layout.tsx` redirects authenticated users to home (`/`)
-- Home screen (`index.tsx`) shows different UI based on `isSignedIn` state
+- Wizard group `(wizard)/_layout.tsx` redirects unauthenticated users to sign-in and wraps wizard in `<WizardProvider>`
+- Home screen (`index.tsx`) shows "Glow Guide" button to start wizard at `/wizard/welcome`
+- Profile screen (`profile.tsx`) displays user information and connected OAuth accounts
+
+### Backend API Architecture
+
+**Location:** `backend/src/`
+
+```
+backend/
+├── src/
+│   ├── server.ts                    # Express app entry point
+│   ├── types/index.ts               # Shared type definitions
+│   ├── middleware/auth.ts           # Clerk JWT verification
+│   ├── services/geminiService.ts    # AI analysis & TTS
+│   ├── controllers/
+│   │   ├── analysisController.ts    # POST /api/analyze
+│   │   └── ttsController.ts         # POST /api/tts
+│   └── routes/api.ts                # Route definitions
+├── package.json
+├── tsconfig.json
+└── .env                             # GEMINI_API_KEY, CLERK_SECRET_KEY, PORT
+```
+
+**API Endpoints:**
+
+- `GET /health` - Health check (no auth required)
+- `POST /api/analyze` - Skin analysis (requires Clerk auth token)
+  - Body: `{ profile: UserProfile, imageBase64: string }`
+  - Returns: `{ data: AnalysisResult }`
+- `POST /api/tts` - Text-to-speech (requires Clerk auth token)
+  - Body: `{ text: string }`
+  - Returns: `{ audioBase64: string }`
+
+**CORS Configuration:**
+
+- Allows all origins in development (`origin: true`)
+- Supports mobile development on local network (localhost:8081, localhost:19006)
+- 10MB JSON body limit for base64 images
 
 ### Authentication System (Clerk)
 
 **Setup:**
 
 - Clerk provider initialized in `app/_layout.tsx` with token caching via `expo-secure-store`
-- Environment variable required: `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- Backend validates JWT tokens using `@clerk/clerk-sdk-node` middleware
+- Environment variables:
+  - Frontend: `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`
+  - Backend: `CLERK_SECRET_KEY`
 - Deep linking scheme: `skinveda` (for OAuth redirects)
 
 **Supported Authentication Methods:**
@@ -82,37 +160,101 @@ const result = await oauthSignUpData.update({ username: oauthUsername });
 **Authentication Hooks:**
 
 - `useUser()` from `@clerk/clerk-expo` - Access user data and `isSignedIn` state
-- `useAuth()` from `@clerk/clerk-expo` - Access `signOut()` method
+- `useAuth()` from `@clerk/clerk-expo` - Access `signOut()` and `getToken()` methods
 
-**Layout Redirect Pattern:**
+**Layout Redirect Patterns:**
 
 ```typescript
-// app/(auth)/_layout.tsx
+// app/(auth)/_layout.tsx - Redirect authenticated users home
 const { isSignedIn } = useAuth();
-
 useEffect(() => {
-  if (isSignedIn) {
-    router.replace('/');  // Redirect authenticated users to home
-  }
+  if (isSignedIn) router.replace('/');
 }, [isSignedIn]);
+
+// app/(wizard)/_layout.tsx - Redirect unauthenticated users to sign-in
+if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />;
+```
+
+### State Management
+
+**WizardContext** (`contexts/WizardContext.tsx`):
+
+- Central state for 7-step wizard flow
+- Persists to AsyncStorage on every change
+- Restores state on app restart (wizard progress preserved)
+
+**State Shape:**
+
+```typescript
+{
+  profile: UserProfile,          // Name, age, gender, skin type, concerns, health
+  capturedImage: string | null,  // Base64 image from camera
+  analysis: AnalysisResult | null, // AI analysis results
+  currentStep: number,           // Current wizard step (0-6)
+}
+```
+
+**Key Methods:**
+
+- `updateProfile(updates)` - Merge partial updates into profile
+- `setCapturedImage(image)` - Store captured photo
+- `setAnalysis(result)` - Store AI analysis
+- `resetWizard()` - Clear all state and AsyncStorage
+
+### API Client Pattern
+
+**ApiClient** (`services/apiClient.ts`):
+
+- Singleton class injected with Clerk's `getToken()` method
+- Automatically attaches `Authorization: Bearer <token>` header
+- Used via `useApiClient()` hook in components
+
+```typescript
+const apiClient = useApiClient();
+
+// Call analysis
+const result = await apiClient.analyzeSkin(profile, imageBase64);
+
+// Get TTS audio
+const audioBase64 = await apiClient.getTTS("Hello world");
 ```
 
 ### Component Organization
 
 ```
 components/
-├── OAuthButton.tsx         # Reusable OAuth provider button
-├── themed-text.tsx         # Theme-aware text wrapper
-├── themed-view.tsx         # Theme-aware view wrapper
-└── ui/                     # UI primitives (icon-symbol)
+├── OAuthButton.tsx              # Reusable OAuth provider button
+├── ProfileInfoRow.tsx           # Profile screen info display
+├── themed-text.tsx              # Theme-aware text wrapper
+├── themed-view.tsx              # Theme-aware view wrapper
+├── ui/
+│   └── icon-symbol.tsx          # Platform-specific SF Symbols
+└── wizard/                      # Wizard-specific components
+    ├── ProgressBar.tsx          # Step progress indicator
+    ├── StepContainer.tsx        # Consistent wizard screen layout
+    ├── SelectionButton.tsx      # Multi-choice selection button
+    ├── CameraView.tsx           # Camera with face guide overlay
+    ├── MetricBar.tsx            # Horizontal metric bar (0-100)
+    ├── MetricCard.tsx           # Score card with icon
+    └── RecommendationCard.tsx   # Collapsible recommendation section
+
+contexts/
+└── WizardContext.tsx            # Wizard state management
+
+services/
+└── apiClient.ts                 # Backend API client
+
+types/
+└── wizard.ts                    # Frontend type definitions
 
 hooks/
-├── use-color-scheme.ts     # Color scheme detection (native)
-├── use-color-scheme.web.ts # Color scheme detection (web)
-└── use-theme-color.ts      # Theme color utilities
+├── use-color-scheme.ts          # Color scheme detection (native)
+├── use-color-scheme.web.ts      # Color scheme detection (web)
+└── use-theme-color.ts           # Theme color utilities
 
 constants/
-└── theme.ts                # Design system colors
+├── theme.ts                     # Design system colors & fonts
+└── wizardOptions.ts             # Wizard dropdown options & text
 ```
 
 ## Design System
@@ -120,11 +262,18 @@ constants/
 ### Color Palette
 
 ```typescript
-// Primary colors
+// Primary brand colors
 Primary: '#E8B4B8'              // Rose/mauve (main theme)
 SignOut: '#FF6B6B'              // Coral red (sign-out button)
 Dark: '#1a1a1a'                 // Dark backgrounds
 Light: '#ffffff'                // Light backgrounds
+
+// Wizard-specific colors (constants/theme.ts)
+WizardColors.primary: '#E8B4B8'
+WizardColors.emerald[500]: '#10B981'  // Success/metrics
+WizardColors.slate[800]: '#1E293B'    // Card backgrounds
+WizardColors.overlay: 'rgba(0, 0, 0, 0.4)'
+WizardColors.cardBg: 'rgba(255, 255, 255, 0.1)'
 
 // Transparency patterns
 'rgba(255, 255, 255, 0.25)'    // Button backgrounds
@@ -147,8 +296,9 @@ Light: '#ffffff'                // Light backgrounds
 - Full-screen video background (`public/video/video.mp4`)
 - Muted by default with toggle button (top-right)
 - Logo positioned top-left
+- Profile button (top-left, near logo) - only when signed in
 - Welcome message OR "Glow Guide" CTA button (bottom center)
-- Sign-out button below welcome message (bright coral color)
+- Sign-out button below welcome message (bright coral color) - only when signed in
 - Tap screen to toggle navigation bar visibility
 
 **Auth Screens:**
@@ -159,16 +309,36 @@ Light: '#ffffff'                // Light backgrounds
 - OAuth buttons with provider icons (Google, GitHub, LinkedIn)
 - Modal for collecting username from OAuth users
 
+**Wizard Screens:**
+
+- Dark background (#1a1a1a)
+- Progress bar at top (7 steps)
+- StepContainer wrapper with consistent layout
+- SelectionButton for multi-choice inputs
+- Slide-from-right animation between steps
+- Dashboard displays metrics as bars + cards with recommendations
+
 ## Environment Setup
 
-### Required Environment Variables
+### Frontend Environment Variables
 
 ```bash
 # .env file (required)
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+EXPO_PUBLIC_BACKEND_URL=http://localhost:3000  # Or production URL
 
-# Optional (for future backend)
-EXPO_PUBLIC_API_URL=
+# Optional
+EXPO_PUBLIC_API_URL=  # Legacy, not currently used
+EXPO_PUBLIC_GOOGLE_CLIENT_ID=  # For OAuth setup
+```
+
+### Backend Environment Variables
+
+```bash
+# backend/.env file (required)
+GEMINI_API_KEY=your_gemini_api_key
+CLERK_SECRET_KEY=sk_test_...
+PORT=3000  # Optional, defaults to 3000
 ```
 
 ### OAuth Configuration
@@ -181,18 +351,84 @@ redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' })
 
 ## Key Dependencies
 
+### Frontend
+
 | Package | Purpose |
 |---------|---------|
 | `expo-router` | File-based routing |
 | `@clerk/clerk-expo` | Authentication |
 | `expo-secure-store` | Secure token caching |
-| `expo-av` | Video/audio playback |
+| `expo-av` | Video/audio playback (landing video, TTS) |
+| `expo-camera` | Face photo capture |
+| `expo-image-picker` | Alternative photo selection |
 | `expo-web-browser` | OAuth web flow |
 | `@expo/vector-icons` | Icon library (MaterialCommunityIcons, FontAwesome5) |
 | `react-native-gesture-handler` | Gesture detection |
 | `react-native-reanimated` | Animations |
+| `@react-native-async-storage/async-storage` | Wizard state persistence |
+| `@google/genai` | Type definitions (shared with backend) |
+
+### Backend
+
+| Package | Purpose |
+|---------|---------|
+| `express` | HTTP server framework |
+| `@clerk/clerk-sdk-node` | JWT verification |
+| `@google/genai` | Gemini AI SDK |
+| `cors` | CORS middleware |
+| `dotenv` | Environment variable loading |
+| `winston` | Logging |
+| `zod` | Runtime validation |
+| `typescript` | Type safety |
+| `ts-node` | TypeScript execution |
+| `nodemon` | Hot reload in development |
 
 ## Critical Implementation Notes
+
+### Gemini AI Integration
+
+**Skin Analysis** (`backend/src/services/geminiService.ts`):
+
+- Model: `gemini-3-flash-preview`
+- Input: User profile (JSON) + face photo (base64 JPEG)
+- Output: Structured JSON with skin metrics (0-100) + recommendations
+- Prompt: Acts as "Holistic Dermatologist and Ayurvedic Skin Specialist"
+- Health data conditioning: Adjusts recommendations based on sleep, heart rate, steps
+- Tools: Google Search enabled for latest dermatology research
+
+**Response Schema:**
+
+```typescript
+{
+  overallScore: number,
+  eyeAge: number,
+  skinAge: number,
+  hydration: number,
+  redness: number,
+  pigmentation: number,
+  lines: number,
+  acne: number,
+  translucency: number,
+  uniformness: number,
+  pores: number,
+  summary: string,
+  recommendations: {
+    yoga: string[],
+    meditation: string[],
+    naturalRemedies: string[],
+    diet: { juices: string[], eat: string[], avoid: string[] },
+    exercises: { face: string[], body: string[] },
+    stressManagement: string[]
+  }
+}
+```
+
+**TTS (Text-to-Speech):**
+
+- Model: `gemini-2.5-flash-preview-tts`
+- Voice: `Kore` (prebuilt voice)
+- Output: Base64-encoded audio
+- Used for narrating wizard steps (not yet implemented in UI)
 
 ### OAuth Sign-Up Flow
 
@@ -234,36 +470,58 @@ const [isMuted, setIsMuted] = useState(true);
 />
 ```
 
-## File Structure
+### Camera Face Capture
 
+**CameraView Component** (`components/wizard/CameraView.tsx`):
+
+- Uses `expo-camera` for in-app capture
+- Oval face guide overlay with scanning animation
+- Auto-detects face positioning (not yet implemented - placeholder for ML Kit)
+- Returns base64 JPEG when "Capture" button pressed
+- Fallback to `expo-image-picker` if camera permissions denied
+
+### Wizard State Persistence
+
+**Critical Behavior:**
+
+- All wizard state saved to AsyncStorage on every change
+- When user returns to app, wizard resumes at last step
+- Use `resetWizard()` to clear state (e.g., after viewing dashboard)
+- State key: `'wizardState'`
+
+### Backend Server Startup
+
+```bash
+# Development (from backend/ directory)
+npm run dev  # Runs on http://0.0.0.0:3000
+
+# Production
+npm run build
+npm start
 ```
-skinveda/
-├── app/                      # Expo Router pages
-│   ├── _layout.tsx          # ClerkProvider wrapper
-│   ├── index.tsx            # Landing page
-│   ├── (auth)/              # Authentication routes
-│   │   ├── _layout.tsx      # Auth guard with redirect
-│   │   ├── sign-in.tsx      # Sign in page
-│   │   └── sign-up.tsx      # Sign up with OAuth modal
-│   └── (tabs)/              # Future: Tab navigation (if needed)
-├── components/              # Reusable components
-├── constants/               # Theme and config
-├── hooks/                   # Custom React hooks
-├── public/                  # Static assets
-│   ├── images/             # Logo, icons, splash
-│   └── video/              # Landing video
-├── .env                     # Environment variables
-├── .env.example            # Environment template
-├── app.json                # Expo configuration
-├── package.json            # Dependencies & scripts
-└── tsconfig.json           # TypeScript config
-```
+
+**Network Access:**
+
+- Server binds to `0.0.0.0` (not `localhost`) for mobile device access on local network
+- Frontend connects to `EXPO_PUBLIC_BACKEND_URL` (default: `http://localhost:3000`)
+- For physical device testing, set `EXPO_PUBLIC_BACKEND_URL=http://<your-ip>:3000`
 
 ## TypeScript Configuration
+
+### Frontend
 
 - **Strict mode enabled** - Full type safety enforced
 - **Path alias**: `@/*` maps to root directory
 - **Base config**: Extends `expo/tsconfig.base`
+- **Typed routes**: Enabled in app.json experiments
+
+### Backend
+
+- **Target**: ES2020
+- **Module**: CommonJS
+- **Out directory**: `dist/`
+- **Root directory**: `src/`
+- **Strict mode**: Enabled
 
 ## Platform-Specific Notes
 
@@ -278,19 +536,21 @@ skinveda/
 
 - Supports tablet layout
 - Standard status bar behavior
+- SF Symbols support via icon-symbol component
 
 ### Web
 
 - Static output build
 - Color scheme detection via `use-color-scheme.web.ts`
+- Not primary target - mobile-first design
 
 ## Common Patterns
 
 ### Adding a New Screen
 
-1. Create file in `app/` directory (e.g., `app/profile.tsx`)
+1. Create file in `app/` directory (e.g., `app/settings.tsx`)
 2. Export default component
-3. File name becomes route (e.g., `/profile`)
+3. File name becomes route (e.g., `/settings`)
 4. Use `(groups)` for layout-specific routes
 
 ### Adding Authentication Guard
@@ -300,7 +560,7 @@ skinveda/
 const { isSignedIn } = useAuth();
 
 if (!isSignedIn) {
-  return <Redirect href="/sign-in" />;
+  return <Redirect href="/(auth)/sign-in" />;
 }
 ```
 
@@ -315,6 +575,29 @@ if (!isSignedIn) return <SignInPrompt />;
 // Access user.username, user.firstName, user.emailAddress, etc.
 ```
 
+### Using WizardContext
+
+```typescript
+import { useWizard } from '@/contexts/WizardContext';
+
+const { profile, updateProfile, capturedImage, analysis } = useWizard();
+
+// Update profile
+updateProfile({ name: 'John', age: '30' });
+
+// Store image
+setCapturedImage(base64String);
+```
+
+### Calling Backend API
+
+```typescript
+import { useApiClient } from '@/services/apiClient';
+
+const apiClient = useApiClient();
+const result = await apiClient.analyzeSkin(profile, imageBase64);
+```
+
 ### Theme-Aware Components
 
 ```typescript
@@ -323,176 +606,24 @@ import { useThemeColor } from '@/hooks/use-theme-color';
 const backgroundColor = useThemeColor({}, 'background');
 ```
 
+### Adding New Backend Endpoint
+
+1. Define controller in `backend/src/controllers/`
+2. Add route in `backend/src/routes/api.ts`
+3. Add method to ApiClient in `services/apiClient.ts`
+4. Import and use in React components
+
 ## Testing & Quality
 
 - **Linting**: ESLint with `eslint-config-expo`
-- **Type checking**: TypeScript strict mode
+- **Type checking**: TypeScript strict mode (frontend + backend)
 - **No test framework configured yet** - To be added
 
-## Future Development Notes
+## Known Issues & Future Work
 
-- API integration ready (placeholder: `EXPO_PUBLIC_API_URL`)
-- Backend endpoints to be implemented
-- Consider adding analytics/error tracking
-- Placeholder for face scan feature (core value proposition)
-
----
-
-# Voice-Enabled Multi-Step Skin Analysis Dashboard Implementation Plan
-
-## Overview
-
-Create a comprehensive 7-step wizard with AI-powered skin analysis, voice narration, camera capture, and results dashboard. Implementation uses Node.js backend with Gemini API integration and React Native frontend with Expo SDK 54.
-
----
-
-## User Decisions
-
-- ✅ Full Node.js backend server (API keys secured server-side)
-- ✅ Complete 7-step wizard flow (Welcome → Profile → Skin Details → Health → Camera → Analysis → Dashboard)
-- ✅ Floating voice button with TTS narration (Gemini 2.5-flash-preview-tts)
-- ✅ In-app camera with face guide overlay (expo-camera)
-- ✅ Modern fonts (Inter + Poppins) and polished dashboard design
-
----
-
-## Architecture Summary
-
-### Backend (Express + TypeScript)
-
-**Location:** `backend/` folder with existing `.env` (GEMINI_API_KEY, CLERK_SECRET_KEY)
-
-**Key Components:**
-
-- Express server with Clerk authentication middleware
-- Port `geminiService.ts` from workingcode (analyzeSkin + getTTS methods)
-- API endpoints: `/api/analyze`, `/api/tts`
-- CORS config for Expo dev server + production domains
-
-### Frontend (React Native + Expo Router)
-
-**Location:** New `app/(wizard)/` route group
-
-**Key Components:**
-
-- 7 wizard screens with shared WizardContext state management
-- Camera component with face guide overlay (oval + scanning animation)
-- Voice button component using expo-av for TTS audio playback
-- Dashboard screen with metric bars, cards, and recommendations sections
-
----
-
-## Implementation Steps
-
-### PHASE 1: Backend Setup (Priority: High)
-
-#### 1.1 Initialize Backend Project
-
-```bash
-cd backend
-npm init -y
-```
-
-**Install Dependencies:**
-
-```bash
-npm install express@4.18.2 typescript@5.3.3 @types/node @types/express \
-  @clerk/clerk-sdk-node@4.13.0 cors @types/cors dotenv winston zod
-
-npm install --save-dev nodemon ts-node
-```
-
-**Files to Create:**
-
-- `backend/package.json` - Add scripts: `"start": "node dist/server.js"`, `"dev": "nodemon src/server.ts"`, `"build": "tsc"`
-- `backend/tsconfig.json` - TypeScript config (target: ES2020, module: commonjs, outDir: dist)
-- `backend/nodemon.json` - Watch `src/**/*.ts`, exec `ts-node src/server.ts`
-
-#### 1.2 Port Types & Services from workingcode
-
-**Copy and adapt these files:**
-
-1. **`backend/src/types/index.ts`**
-   - Port from `workingcode/types.ts` (UserProfile, AnalysisResult, HealthData interfaces)
-   - Keep exact structure - no changes needed
-
-2. **`backend/src/services/geminiService.ts`**
-   - Port from `workingcode/services/geminiService.ts` (SkinAnalysisService class)
-   - Change line 9: `process.env.API_KEY` → `process.env.GEMINI_API_KEY`
-   - Keep exact prompt (lines 13-34) - includes health data conditioning logic
-   - Keep exact response schema (lines 49-97) - guarantees typed JSON
-   - Keep both methods: `analyzeSkin()` and `getTTS()`
-
-See the full implementation plan in the sections below for complete details on all 7 phases, including:
-
-- Frontend foundation with WizardContext
-- Wizard screens and components
-- Camera integration with face guide
-- Dashboard with metrics and recommendations
-- Voice integration with TTS
-- Integration and polish
-
----
-
-## Critical Files to Create/Modify
-
-### Backend (9 New Files)
-
-1. `backend/src/server.ts` - Express app with CORS and auth
-2. `backend/src/middleware/auth.ts` - Clerk JWT verification
-3. `backend/src/services/geminiService.ts` - AI analysis service
-4. `backend/src/controllers/analysisController.ts` - Analysis endpoint
-5. `backend/src/controllers/ttsController.ts` - TTS endpoint
-6. `backend/src/routes/api.ts` - API routes
-7. `backend/src/types/index.ts` - Type definitions
-8. `backend/package.json` - Dependencies
-9. `backend/tsconfig.json` - TypeScript config
-
-Excellent! 🎉 Phase 1 Backend Setup is now complete!
-
-### Frontend (20 New Files)
-
-1. `app/(wizard)/_layout.tsx` - Wizard wrapper with context
-2. `app/(wizard)/welcome.tsx` - Step 1: Welcome screen
-3. `app/(wizard)/profile-name.tsx` - Step 2: Name input
-4. `app/(wizard)/profile-bio.tsx` - Step 3: Age + Gender
-5. `app/(wizard)/skin-details.tsx` - Step 4: Skin type + sensitivity
-6. `app/(wizard)/concerns-health.tsx` - Step 5: Concerns + health data
-7. `app/(wizard)/photo-capture.tsx` - Step 6: Camera/upload
-8. `app/(wizard)/dashboard.tsx` - Step 7: Results dashboard
-9. `contexts/WizardContext.tsx` - State management with AsyncStorage
-10. `services/apiClient.ts` - Backend API client
-11. `types/wizard.ts` - Type definitions
-12. `constants/wizardOptions.ts` - UI options and text
-13-20. Wizard UI components (ProgressBar, StepContainer, SelectionButton, CameraView, VoiceButton, MetricBar, MetricCard, RecommendationCard)
-
-### Frontend (3 Files to Modify)
-
-1. `app/index.tsx` - Wire "Glow Guide" button to `/wizard/welcome`
-2. `constants/theme.ts` - Add WizardColors and WizardFonts
-3. `.env` - Add `EXPO_PUBLIC_BACKEND_URL=http://localhost:3000`
-
----
-
-## Timeline Estimate
-
-- **Phase 1 (Backend):** 1-2 days
-- **Phase 2 (Frontend Foundation):** 1 day
-- **Phase 3 (Wizard Screens):** 2 days
-- **Phase 4 (Camera):** 1 day
-- **Phase 5 (Dashboard):** 2 days
-- **Phase 6 (Voice):** 1 day
-- **Phase 7 (Integration):** 1 day
-
-**Total: 9-10 days** (full-time development)
-
----
-
-## Next Steps
-
-1. Start with Phase 1 (Backend setup)
-2. Install dependencies and create folder structure
-3. Port geminiService.ts from workingcode
-4. Build Express server with Clerk auth middleware
-5. Test backend endpoints with curl/Postman
-6. Move to frontend implementation
+- TTS voice narration not yet integrated in wizard UI (backend ready)
+- Face detection overlay is placeholder (ML Kit integration needed)
+- No analytics/error tracking configured
+- Dashboard "Share Results" feature not implemented
+- No backend deployment configuration (currently local only)
+- Health data integration (wearables) not yet implemented
