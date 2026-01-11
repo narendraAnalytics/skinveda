@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { useRouter } from 'expo-router';
-import { StepContainer } from '@/components/wizard/StepContainer';
 import { ProgressBar } from '@/components/wizard/ProgressBar';
+import { StepContainer } from '@/components/wizard/StepContainer';
 import { WizardColors } from '@/constants/theme';
 import { STEP_TEXTS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function ProfileNameScreen() {
   const router = useRouter();
@@ -35,7 +35,7 @@ export default function ProfileNameScreen() {
           <TextInput
             style={styles.input}
             placeholder="Enter your name"
-            placeholderTextColor="rgba(255, 255, 255, 0.4)"
+            placeholderTextColor="rgba(61, 107, 122, 0.4)"
             value={name}
             onChangeText={setName}
             autoFocus
@@ -59,7 +59,8 @@ export default function ProfileNameScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
+    paddingTop: 80,
   },
   content: {
     flex: 1,
@@ -67,14 +68,14 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderWidth: 2,
     borderColor: WizardColors.emerald[500],
     borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 16,
     fontSize: 18,
-    color: '#FFFFFF',
+    color: '#3D6B7A',
     marginBottom: 32,
   },
   button: {

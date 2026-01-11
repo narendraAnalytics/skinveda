@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
 import { WizardColors } from '@/constants/theme';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface RecommendationCardProps {
   title: string;
@@ -25,17 +25,17 @@ export function RecommendationCard({ title, items }: RecommendationCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: WizardColors.cardBg,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(61, 107, 122, 0.2)',
   },
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#E8B4B8',
     marginBottom: 16,
   },
   itemsContainer: {
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   itemText: {
     flex: 1,
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#3D6B7A',
     lineHeight: 20,
   },
 });

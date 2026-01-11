@@ -1,8 +1,8 @@
-import { Stack, Redirect } from 'expo-router';
-import { useAuth } from '@clerk/clerk-expo';
-import { View, Text, StyleSheet } from 'react-native';
 import { WizardProvider } from '@/contexts/WizardContext';
+import { useAuth } from '@clerk/clerk-expo';
+import { Redirect, Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function WizardLayout() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -24,11 +24,11 @@ export default function WizardLayout() {
   // Render wizard for authenticated users
   return (
     <WizardProvider>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <Stack screenOptions={{
         headerShown: false,
         animation: 'slide_from_right',
-        contentStyle: { backgroundColor: '#1a1a1a' }
+        contentStyle: { backgroundColor: '#F5F3EF' }
       }}>
         <Stack.Screen name="welcome" />
         <Stack.Screen name="profile-name" />
@@ -45,7 +45,7 @@ export default function WizardLayout() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
     justifyContent: 'center',
     alignItems: 'center',
   },

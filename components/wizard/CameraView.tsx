@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { CameraView as ExpoCamera, useCameraPermissions } from 'expo-camera';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Svg, { Ellipse } from 'react-native-svg';
 import { WizardColors } from '@/constants/theme';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CameraView as ExpoCamera, useCameraPermissions } from 'expo-camera';
+import { useRef, useState } from 'react';
+import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Svg, { Ellipse } from 'react-native-svg';
 
 interface CameraViewProps {
   onCapture: (imageUri: string) => void;
@@ -21,7 +21,7 @@ export function CameraView({ onCapture }: CameraViewProps) {
   if (!permission.granted) {
     return (
       <View style={styles.permissionContainer}>
-        <MaterialCommunityIcons name="camera-off" size={64} color="#FFFFFF" />
+        <MaterialCommunityIcons name="camera-off" size={64} color={WizardColors.emerald[500]} />
         <Text style={styles.permissionText}>
           Camera access is required to analyze your skin
         </Text>
@@ -153,12 +153,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
     padding: 24,
   },
   permissionText: {
     fontSize: 18,
-    color: '#FFFFFF',
+    color: '#3D6B7A',
     textAlign: 'center',
     marginVertical: 24,
   },

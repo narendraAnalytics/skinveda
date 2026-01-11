@@ -1,5 +1,5 @@
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { WizardColors } from '@/constants/theme';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 interface SelectionButtonProps {
   label: string;
@@ -27,8 +27,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: 'rgba(61, 107, 122, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     marginBottom: 12,
   },
   buttonSelected: {
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#3D6B7A',
     textAlign: 'center',
   },
   textSelected: {

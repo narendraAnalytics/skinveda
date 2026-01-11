@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { MetricBar } from '@/components/wizard/MetricBar';
 import { MetricCard } from '@/components/wizard/MetricCard';
 import { RecommendationCard } from '@/components/wizard/RecommendationCard';
 import { WizardColors, WizardFonts } from '@/constants/theme';
 import { useWizard } from '@/contexts/WizardContext';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -154,7 +154,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
   },
   scrollView: {
     flex: 1,
@@ -165,18 +165,18 @@ const styles = StyleSheet.create({
   },
   title: {
     ...WizardFonts.heading,
-    color: '#FFFFFF',
+    color: '#E8B4B8',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: '#4A7C8C',
   },
   scoreContainer: {
     alignItems: 'center',
     marginBottom: 32,
     paddingVertical: 24,
-    backgroundColor: WizardColors.cardBg,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     marginHorizontal: 24,
     borderRadius: 20,
     borderWidth: 2,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: '#3D6B7A',
     marginTop: 8,
   },
   cardsRow: {
@@ -208,19 +208,19 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#E8B4B8',
     marginBottom: 16,
   },
   summaryCard: {
-    backgroundColor: WizardColors.cardBg,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(61, 107, 122, 0.2)',
   },
   summaryText: {
     fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#3D6B7A',
     lineHeight: 24,
   },
   actions: {
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   errorText: {
     fontSize: 18,
-    color: '#FFFFFF',
+    color: '#3D6B7A',
     marginBottom: 24,
   },
 });

@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { StepContainer } from '@/components/wizard/StepContainer';
 import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { SelectionButton } from '@/components/wizard/SelectionButton';
+import { StepContainer } from '@/components/wizard/StepContainer';
 import { WizardColors } from '@/constants/theme';
-import { STEP_TEXTS, SKIN_TYPES, SENSITIVITY_LEVELS } from '@/constants/wizardOptions';
+import { SENSITIVITY_LEVELS, SKIN_TYPES, STEP_TEXTS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function SkinDetailsScreen() {
   const router = useRouter();
@@ -73,7 +73,8 @@ export default function SkinDetailsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
+    paddingTop: 80,
   },
   content: {
     flex: 1,
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#3D6B7A',
     marginBottom: 12,
     marginTop: 8,
   },

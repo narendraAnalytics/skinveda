@@ -1,5 +1,5 @@
-import { View, Text, StyleSheet } from 'react-native';
 import { WizardColors } from '@/constants/theme';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface MetricCardProps {
   title: string;
@@ -19,17 +19,17 @@ export function MetricCard({ title, value, subtitle }: MetricCardProps) {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: WizardColors.cardBg,
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(61, 107, 122, 0.2)',
   },
   title: {
     fontSize: 14,
     fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#4A7C8C',
     marginBottom: 8,
   },
   value: {
@@ -40,6 +40,6 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: '#3D6B7A',
   },
 });

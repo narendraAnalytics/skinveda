@@ -107,7 +107,8 @@ export default function PhotoCaptureScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
+    paddingTop: 80,
   },
   content: {
     flex: 1,
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#E8B4B8',
     marginBottom: 32,
   },
   preview: {
@@ -153,17 +154,17 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   buttonSecondary: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
     paddingVertical: 18,
     borderRadius: 24,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(61, 107, 122, 0.2)',
   },
   buttonSecondaryText: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: '#3D6B7A',
   },
   analyzeButton: {
     backgroundColor: WizardColors.emerald[600],

@@ -1,7 +1,7 @@
-import { ReactNode } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { WizardFonts } from '@/constants/theme';
+import { ReactNode } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface StepContainerProps {
   title: string;
@@ -28,19 +28,19 @@ export function StepContainer({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
   },
   content: {
     padding: 24,
   },
   title: {
     ...WizardFonts.heading,
-    color: '#FFFFFF',
+    color: '#E8B4B8',
     marginBottom: 8,
   },
   subtitle: {
     ...WizardFonts.body,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: '#4A7C8C',
     marginBottom: 32,
   },
   children: {
