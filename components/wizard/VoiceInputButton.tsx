@@ -1,4 +1,5 @@
 import { WizardColors } from '@/constants/theme';
+import { useWizard } from '@/contexts/WizardContext';
 import { useApiClient } from '@/services/apiClient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
@@ -11,7 +12,8 @@ interface VoiceInputButtonProps {
   disabled?: boolean;
 }
 
-export function VoiceInputButton({ onTranscript, disabled = false }: VoiceInputButtonProps) {
+export function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonProps) {
+  const { profile } = useWizard();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
@@ -69,7 +71,8 @@ export function VoiceInputButton({ onTranscript, disabled = false }: VoiceInputB
 
       // Send to backend for transcription
       console.log('[VoiceInput] Sending to backend for transcription...');
-      const text = await apiClient.transcribeAudio(base64, 'audio/m4a');
+      console.log('[VoiceInput] Transcribing with language:', profile.language);
+      const text = await apiClient.transcribeAudio(base64, 'audio/m4a', profile.language);
       console.log('[VoiceInput] Transcription result:', text);
 
       if (text) {

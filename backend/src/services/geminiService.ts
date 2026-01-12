@@ -23,6 +23,9 @@ export class SkinAnalysisService {
       If steps are low, suggest more circulation-boosting body exercises.
 
       Your goal is to provide a "Live Doctor" experience. Provide a comprehensive skin analysis and a personalized holistic prescription.
+      
+      CRITICAL: All generated text (summary, recommendations, exercises, etc.) MUST be in the following language: ${profile.language || 'en'}.
+      Even if the input data is in English, the output JSON values MUST be in ${profile.language || 'en'}.
 
       Include specific sections for:
       1. Clinical skin metrics (hydration, acne, etc.).
@@ -102,10 +105,10 @@ export class SkinAnalysisService {
     return JSON.parse(response.text || '{}') as AnalysisResult;
   }
 
-  async getTTS(text: string): Promise<string> {
+  async getTTS(text: string, language: string = 'en'): Promise<string> {
     const response = await this.ai.models.generateContent({
       model: "gemini-2.5-flash-preview-tts",
-      contents: [{ parts: [{ text: `Speak naturally: ${text}` }] }],
+      contents: [{ parts: [{ text: `Speak naturally in ${language}: ${text}` }] }],
       config: {
         responseModalities: ["AUDIO" as any],
         speechConfig: {
@@ -119,12 +122,12 @@ export class SkinAnalysisService {
     return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || '';
   }
 
-  async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav'): Promise<string> {
+  async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav', language: string = 'en'): Promise<string> {
     const response = await this.ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: [{
         parts: [
-          { text: 'Transcribe this audio clearly. Return only the spoken text without any formatting or extra words.' },
+          { text: `Transcribe this audio clearly in ${language}. Format any spoken numbers as digits (e.g., "36" instead of "thirty six"). Return only the spoken text without any formatting or extra words.` },
           { inlineData: { mimeType, data: audioBase64 } }
         ]
       }]

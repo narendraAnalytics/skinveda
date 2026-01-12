@@ -4,15 +4,16 @@ import { SkinAnalysisService } from '../services/geminiService';
 
 const transcribeSchema = z.object({
   audioBase64: z.string(),
-  mimeType: z.string().optional().default('audio/wav')
+  mimeType: z.string().optional().default('audio/wav'),
+  language: z.string().optional()
 });
 
 export async function handleTranscribe(req: Request, res: Response) {
   try {
-    const { audioBase64, mimeType } = transcribeSchema.parse(req.body);
+    const { audioBase64, mimeType, language } = transcribeSchema.parse(req.body);
 
     const service = new SkinAnalysisService();
-    const text = await service.transcribeAudio(audioBase64, mimeType);
+    const text = await service.transcribeAudio(audioBase64, mimeType, language || 'en');
 
     res.json({
       success: true,

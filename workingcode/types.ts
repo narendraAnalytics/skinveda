@@ -15,6 +15,7 @@ export interface UserProfile {
   concerns: string[];
   healthConditions: string[];
   healthData?: HealthData;
+  language: string;
 }
 
 export interface AnalysisResult {

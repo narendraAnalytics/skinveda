@@ -1,8 +1,9 @@
 import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { SelectionButton } from '@/components/wizard/SelectionButton';
 import { StepContainer } from '@/components/wizard/StepContainer';
+import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
 import { WizardColors } from '@/constants/theme';
-import { HEALTH_CONDITIONS, SKIN_CONCERNS, STEP_TEXTS } from '@/constants/wizardOptions';
+import { HEALTH_CONDITIONS, SKIN_CONCERNS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 
 export default function ConcernsHealthScreen() {
   const router = useRouter();
-  const { profile, updateProfile, setCurrentStep } = useWizard();
+  const { profile, updateProfile, setCurrentStep, t } = useWizard();
   const [concerns, setConcerns] = useState<string[]>(profile.concerns);
   const [healthConditions, setHealthConditions] = useState<string[]>(profile.healthConditions);
 
@@ -45,32 +46,64 @@ export default function ConcernsHealthScreen() {
       <ProgressBar currentStep={5} totalSteps={7} />
 
       <StepContainer
-        title="Concerns & Health"
-        subtitle={STEP_TEXTS.concernsHealth}
+        title={t('concerns_health')}
+        subtitle={t('concerns_subtitle')}
       >
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.label}>Skin Concerns (Select all that apply)</Text>
+          <View style={styles.headerWithVoice}>
+            <Text style={styles.label}>{t('main_concerns')}</Text>
+            <VoiceInputButton
+              onTranscript={(text) => {
+                const lowerText = text.toLowerCase();
+                const found = SKIN_CONCERNS.find(opt => {
+                  const key = opt.toLowerCase().replace(/\s+/g, '_').replace('dryness', 'dryness_concern').replace('oiliness', 'oiliness_concern');
+                  const translated = t(key).toLowerCase();
+                  return lowerText.includes(opt.toLowerCase()) || lowerText.includes(translated);
+                });
+                if (found) toggleConcern(found);
+              }}
+            />
+          </View>
           <View style={styles.options}>
-            {SKIN_CONCERNS.map((concern) => (
-              <SelectionButton
-                key={concern}
-                label={concern}
-                selected={concerns.includes(concern)}
-                onPress={() => toggleConcern(concern)}
-              />
-            ))}
+            {SKIN_CONCERNS.map((concern) => {
+              const key = concern.toLowerCase().replace(/\s+/g, '_').replace('dryness', 'dryness_concern').replace('oiliness', 'oiliness_concern');
+              return (
+                <SelectionButton
+                  key={concern}
+                  label={t(key)}
+                  selected={concerns.includes(concern)}
+                  onPress={() => toggleConcern(concern)}
+                />
+              );
+            })}
           </View>
 
-          <Text style={styles.label}>Health Conditions (Select all that apply)</Text>
+          <View style={styles.headerWithVoice}>
+            <Text style={styles.label}>{t('lifestyle')}</Text>
+            <VoiceInputButton
+              onTranscript={(text) => {
+                const lowerText = text.toLowerCase();
+                const found = HEALTH_CONDITIONS.find(opt => {
+                  const key = opt.toLowerCase().replace(/\s+/g, '_');
+                  const translated = t(key).toLowerCase();
+                  return lowerText.includes(opt.toLowerCase()) || lowerText.includes(translated);
+                });
+                if (found) toggleHealthCondition(found);
+              }}
+            />
+          </View>
           <View style={styles.options}>
-            {HEALTH_CONDITIONS.map((condition) => (
-              <SelectionButton
-                key={condition}
-                label={condition}
-                selected={healthConditions.includes(condition)}
-                onPress={() => toggleHealthCondition(condition)}
-              />
-            ))}
+            {HEALTH_CONDITIONS.map((condition) => {
+              const key = condition.toLowerCase().replace(/\s+/g, '_');
+              return (
+                <SelectionButton
+                  key={condition}
+                  label={t(key)}
+                  selected={healthConditions.includes(condition)}
+                  onPress={() => toggleHealthCondition(condition)}
+                />
+              );
+            })}
           </View>
 
           <TouchableOpacity
@@ -78,7 +111,7 @@ export default function ConcernsHealthScreen() {
             onPress={handleNext}
             disabled={!isValid}
           >
-            <Text style={styles.buttonText}>Continue</Text>
+            <Text style={styles.buttonText}>{t('next')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </StepContainer>
@@ -99,6 +132,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#3D6B7A',
+  },
+  headerWithVoice: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
     marginTop: 8,
   },

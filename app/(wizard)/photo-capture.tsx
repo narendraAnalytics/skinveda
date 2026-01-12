@@ -10,7 +10,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function PhotoCaptureScreen() {
   const router = useRouter();
-  const { capturedImage, setCapturedImage, profile, setAnalysis, setCurrentStep } = useWizard();
+  const { capturedImage, setCapturedImage, profile, setAnalysis, setCurrentStep, t } = useWizard();
   const [showCamera, setShowCamera] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const apiClient = useApiClient();
@@ -67,38 +67,37 @@ export default function PhotoCaptureScreen() {
       <ProgressBar currentStep={6} totalSteps={7} />
 
       <View style={styles.content}>
-        <Text style={styles.title}>Capture Your Face</Text>
+        <Text style={styles.title}>{t('face_analysis')}</Text>
+        <Text style={styles.subtitle}>{t('capture_subtitle')}</Text>
 
         {capturedImage ? (
           <View style={styles.preview}>
             <Image source={{ uri: capturedImage }} style={styles.image} />
             <TouchableOpacity style={styles.retakeButton} onPress={() => setCapturedImage(null)}>
-              <Text style={styles.retakeText}>Retake Photo</Text>
+              <Text style={styles.retakeText}>{t('retake_photo')}</Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.options}>
             <TouchableOpacity style={styles.button} onPress={() => setShowCamera(true)}>
-              <Text style={styles.buttonText}>Open Camera</Text>
+              <Text style={styles.buttonText}>{t('open_camera')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.buttonSecondary} onPress={handleUpload}>
-              <Text style={styles.buttonSecondaryText}>Upload Photo</Text>
+              <Text style={styles.buttonSecondaryText}>{t('upload_photo')}</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {capturedImage && (
-          <TouchableOpacity
-            style={[styles.analyzeButton, isAnalyzing && styles.analyzeButtonDisabled]}
-            onPress={handleAnalyze}
-            disabled={isAnalyzing}
-          >
-            <Text style={styles.analyzeButtonText}>
-              {isAnalyzing ? 'Analyzing...' : 'Analyze My Skin'}
-            </Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          style={[styles.analyzeButton, isAnalyzing && styles.analyzeButtonDisabled]}
+          onPress={handleAnalyze}
+          disabled={isAnalyzing}
+        >
+          <Text style={styles.analyzeButtonText}>
+            {isAnalyzing ? t('reading_skin') : t('analyze')}
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -118,7 +117,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '700',
     color: '#E8B4B8',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#4A7C8C',
     marginBottom: 32,
+    lineHeight: 24,
   },
   preview: {
     flex: 1,

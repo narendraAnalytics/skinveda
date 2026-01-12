@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { UserProfile, AnalysisResult } from "../types";
+import { AnalysisResult, UserProfile } from "../types";
 
 export class SkinAnalysisService {
   private ai: GoogleGenAI;
@@ -20,6 +20,7 @@ export class SkinAnalysisService {
       If healthData shows low sleep (<7 hours), prioritize eye care and anti-inflammatory juices. 
       If heart rate or stress conditions are high, focus on Vata-balancing meditation.
       If steps are low, suggest more circulation-boosting body exercises.
+      MUST be written in ${profile.language}. The clinical metrics and keys remain the same.
       
       Your goal is to provide a "Live Doctor" experience. Provide a comprehensive skin analysis and a personalized holistic prescription.
       
@@ -90,8 +91,8 @@ export class SkinAnalysisService {
             }
           },
           required: [
-            "overallScore", "eyeAge", "skinAge", "hydration", "redness", 
-            "pigmentation", "lines", "acne", "translucency", "uniformness", 
+            "overallScore", "eyeAge", "skinAge", "hydration", "redness",
+            "pigmentation", "lines", "acne", "translucency", "uniformness",
             "pores", "summary", "recommendations"
           ]
         }

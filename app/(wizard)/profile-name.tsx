@@ -2,7 +2,6 @@ import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { StepContainer } from '@/components/wizard/StepContainer';
 import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
 import { WizardColors } from '@/constants/theme';
-import { STEP_TEXTS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -10,7 +9,7 @@ import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableO
 
 export default function ProfileNameScreen() {
   const router = useRouter();
-  const { profile, updateProfile, setCurrentStep } = useWizard();
+  const { profile, updateProfile, setCurrentStep, t } = useWizard();
   const [name, setName] = useState(profile.name);
 
   const handleNext = () => {
@@ -29,14 +28,14 @@ export default function ProfileNameScreen() {
       <ProgressBar currentStep={2} totalSteps={7} />
 
       <StepContainer
-        title="What's your name?"
-        subtitle={STEP_TEXTS.profileName}
+        title={t('name_q')}
+        subtitle={t('name_q_subtitle')}
       >
         <View style={styles.content}>
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
-              placeholder="Enter your name"
+              placeholder={t('name_placeholder')}
               placeholderTextColor="rgba(61, 107, 122, 0.4)"
               value={name}
               onChangeText={setName}
@@ -57,7 +56,7 @@ export default function ProfileNameScreen() {
             onPress={handleNext}
             disabled={!name.trim()}
           >
-            <Text style={styles.buttonText}>Continue</Text>
+            <Text style={styles.buttonText}>{t('continue')}</Text>
           </TouchableOpacity>
         </View>
       </StepContainer>

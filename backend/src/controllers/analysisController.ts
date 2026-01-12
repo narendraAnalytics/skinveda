@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { SkinAnalysisService } from '../services/geminiService';
 import { DatabaseService } from '../services/dbService';
+import { SkinAnalysisService } from '../services/geminiService';
 
 const profileSchema = z.object({
   name: z.string(),
@@ -16,7 +16,8 @@ const profileSchema = z.object({
     sleepHours: z.number(),
     heartRate: z.number(),
     lastSync: z.string()
-  }).optional()
+  }).optional(),
+  language: z.string().optional().default('en')
 });
 
 const analyzeSchema = z.object({

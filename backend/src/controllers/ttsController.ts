@@ -3,15 +3,16 @@ import { z } from 'zod';
 import { SkinAnalysisService } from '../services/geminiService';
 
 const ttsSchema = z.object({
-  text: z.string().min(1).max(500)
+  text: z.string().min(1).max(500),
+  language: z.string().optional()
 });
 
 export async function handleTTS(req: Request, res: Response) {
   try {
-    const { text } = ttsSchema.parse(req.body);
+    const { text, language } = ttsSchema.parse(req.body);
 
     const service = new SkinAnalysisService();
-    const audioBase64 = await service.getTTS(text);
+    const audioBase64 = await service.getTTS(text, language || 'en');
 
     res.json({ success: true, audioBase64 });
   } catch (error) {

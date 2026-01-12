@@ -1,13 +1,14 @@
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GoogleGenAI, LiveServerMessage, Modality, Blob } from '@google/genai';
+import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
+import React, { useRef, useState } from 'react';
 
 interface VoiceAssistantProps {
   onTranscript: (text: string) => void;
   currentQuestion: string;
+  language: string;
 }
 
-const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onTranscript, currentQuestion }) => {
+const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onTranscript, currentQuestion, language }) => {
   const [isActive, setIsActive] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const sessionRef = useRef<any>(null);
@@ -48,7 +49,6 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onTranscript, currentQu
         onopen: () => {
           setIsConnecting(false);
           setIsActive(true);
-          console.log('Voice session opened');
         },
         onmessage: async (message: LiveServerMessage) => {
           if (message.serverContent?.outputTranscription) {
@@ -78,32 +78,33 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onTranscript, currentQu
       config: {
         responseModalities: [Modality.AUDIO],
         outputAudioTranscription: {},
-        systemInstruction: `You are SkinVeda's friendly voice assistant. Help the user complete their skin profile. Current question: ${currentQuestion}. Keep it concise.`
+        systemInstruction: `You are SkinVeda's friendly voice assistant. Help the user complete their skin profile. 
+        Preferred language is ${language}. Speak and respond only in ${language}.
+        Current step: ${currentQuestion}. Keep it concise.`
       }
     });
 
     sessionRef.current = await sessionPromise;
-    
-    // Setup Microphone
+
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     const inputCtx = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 16000 });
     const source = inputCtx.createMediaStreamSource(stream);
     const processor = inputCtx.createScriptProcessor(4096, 1, 1);
-    
+
     processor.onaudioprocess = (e) => {
       const inputData = e.inputBuffer.getChannelData(0);
       const int16 = new Int16Array(inputData.length);
       for (let i = 0; i < inputData.length; i++) int16[i] = inputData[i] * 32768;
-      
+
       let binary = '';
       const bytes = new Uint8Array(int16.buffer);
       for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-      
+
       sessionRef.current?.sendRealtimeInput({
         media: { data: btoa(binary), mimeType: 'audio/pcm;rate=16000' }
       });
     };
-    
+
     source.connect(processor);
     processor.connect(inputCtx.destination);
   };
@@ -118,22 +119,15 @@ const VoiceAssistant: React.FC<VoiceAssistantProps> = ({ onTranscript, currentQu
       <button
         onClick={isActive ? stopSession : startSession}
         disabled={isConnecting}
-        className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all ${
-          isActive ? 'bg-red-500 scale-110 animate-pulse' : 'bg-emerald-600 hover:bg-emerald-700'
-        }`}
+        className={`w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all ${isActive ? 'bg-red-500 scale-110 animate-pulse' : 'bg-emerald-600 hover:bg-emerald-700'
+          }`}
       >
         {isConnecting ? (
-          <i className="fas fa-circle-notch fa-spin text-white text-2xl"></i>
+          <i className="fas fa-circle-notch fa-spin text-white text-xl"></i>
         ) : (
-          <i className={`fas ${isActive ? 'fa-stop' : 'fa-microphone'} text-white text-2xl`}></i>
+          <i className={`fas ${isActive ? 'fa-stop' : 'fa-microphone'} text-white text-xl`}></i>
         )}
       </button>
-      {isActive && (
-        <div className="absolute bottom-20 right-0 bg-white p-3 rounded-xl shadow-lg border border-emerald-100 w-48 text-xs text-emerald-800">
-          <p className="font-semibold mb-1">SkinVeda is listening...</p>
-          <p className="italic opacity-70">"I can help you fill this out"</p>
-        </div>
-      )}
     </div>
   );
 };

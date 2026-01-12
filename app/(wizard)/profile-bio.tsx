@@ -3,15 +3,39 @@ import { SelectionButton } from '@/components/wizard/SelectionButton';
 import { StepContainer } from '@/components/wizard/StepContainer';
 import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
 import { WizardColors } from '@/constants/theme';
-import { GENDERS, STEP_TEXTS } from '@/constants/wizardOptions';
+import { GENDERS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+// Helper to extract numbers or parse English number words
+const parseNumericSpeech = (text: string): string => {
+  // Try to find raw digits first
+  const digits = text.replace(/[^0-9]/g, '');
+  if (digits) return digits;
+
+  const numberMap: Record<string, number> = {
+    zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+    eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20,
+    thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90
+  };
+
+  const words = text.toLowerCase().replace(/-/g, ' ').split(/\s+/);
+  let total = 0;
+  let found = false;
+  for (const word of words) {
+    if (numberMap[word] !== undefined) {
+      total += numberMap[word];
+      found = true;
+    }
+  }
+  return found ? total.toString() : '';
+};
+
 export default function ProfileBioScreen() {
   const router = useRouter();
-  const { profile, updateProfile, setCurrentStep } = useWizard();
+  const { profile, updateProfile, setCurrentStep, t } = useWizard();
   const [age, setAge] = useState(profile.age);
   const [gender, setGender] = useState(profile.gender);
 
@@ -33,11 +57,11 @@ export default function ProfileBioScreen() {
       <ProgressBar currentStep={3} totalSteps={7} />
 
       <StepContainer
-        title="About You"
-        subtitle={STEP_TEXTS.profileBio}
+        title={t('personal_details')}
+        subtitle={t('bio_subtitle')}
       >
         <View style={styles.content}>
-          <Text style={styles.label}>Age</Text>
+          <Text style={styles.label}>{t('age_q')}</Text>
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
@@ -51,21 +75,35 @@ export default function ProfileBioScreen() {
             <View style={styles.voiceButton}>
               <VoiceInputButton
                 onTranscript={(text) => {
-                  // Extract numbers from transcribed text
-                  const numericValue = text.replace(/[^0-9]/g, '');
-                  setAge(numericValue);
+                  const result = parseNumericSpeech(text);
+                  if (result) {
+                    setAge(result);
+                  }
                 }}
                 disabled={false}
               />
             </View>
           </View>
 
-          <Text style={styles.label}>Gender</Text>
+          <View style={styles.headerWithVoice}>
+            <Text style={styles.label}>{t('gender_q')}</Text>
+            <VoiceInputButton
+              onTranscript={(text) => {
+                const lowerText = text.toLowerCase();
+                const found = GENDERS.find(opt => {
+                  const key = opt.toLowerCase().replace(/\s+/g, '_');
+                  const translated = t(key).toLowerCase();
+                  return lowerText.includes(opt.toLowerCase()) || lowerText.includes(translated);
+                });
+                if (found) setGender(found);
+              }}
+            />
+          </View>
           <View style={styles.options}>
             {GENDERS.map((option) => (
               <SelectionButton
                 key={option}
-                label={option}
+                label={t(option.toLowerCase().replace(/\s+/g, '_'))}
                 selected={gender === option}
                 onPress={() => setGender(option)}
               />
@@ -77,7 +115,7 @@ export default function ProfileBioScreen() {
             onPress={handleNext}
             disabled={!isValid}
           >
-            <Text style={styles.buttonText}>Continue</Text>
+            <Text style={styles.buttonText}>{t('continue')}</Text>
           </TouchableOpacity>
         </View>
       </StepContainer>
@@ -116,6 +154,13 @@ const styles = StyleSheet.create({
     paddingRight: 70,
     fontSize: 18,
     color: '#3D6B7A',
+  },
+  headerWithVoice: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    marginTop: 8,
   },
   voiceButton: {
     position: 'absolute',

@@ -32,7 +32,7 @@ SkinVeda utilizes the latest Google Gemini models to provide a sophisticated, hu
 - **Role**: Provides narrative guidance during step transitions.
 
 ## 📋 Application Flow
-
+Language Selection**: Choose your preferred tongue (English, Hindi, etc.).
 1. **Welcome**: Introduction to the Vedic journey.
 2. **Profile Onboarding**: Collection of basic info.
 3. **Skin Profiling**: User selects skin type and sensitivity levels.

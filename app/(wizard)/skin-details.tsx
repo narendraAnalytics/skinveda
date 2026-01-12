@@ -1,8 +1,9 @@
 import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { SelectionButton } from '@/components/wizard/SelectionButton';
 import { StepContainer } from '@/components/wizard/StepContainer';
+import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
 import { WizardColors } from '@/constants/theme';
-import { SENSITIVITY_LEVELS, SKIN_TYPES, STEP_TEXTS } from '@/constants/wizardOptions';
+import { SENSITIVITY_LEVELS, SKIN_TYPES } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 
 export default function SkinDetailsScreen() {
   const router = useRouter();
-  const { profile, updateProfile, setCurrentStep } = useWizard();
+  const { profile, updateProfile, setCurrentStep, t } = useWizard();
   const [skinType, setSkinType] = useState(profile.skinType);
   const [sensitivity, setSensitivity] = useState(profile.sensitivity);
 
@@ -29,32 +30,64 @@ export default function SkinDetailsScreen() {
       <ProgressBar currentStep={4} totalSteps={7} />
 
       <StepContainer
-        title="Skin Profile"
-        subtitle={STEP_TEXTS.skinDetails}
+        title={t('skin_profile')}
+        subtitle={t('skin_details_subtitle')}
       >
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <Text style={styles.label}>Skin Type</Text>
+          <View style={styles.headerWithVoice}>
+            <Text style={styles.label}>{t('skin_type')}</Text>
+            <VoiceInputButton
+              onTranscript={(text) => {
+                const lowerText = text.toLowerCase();
+                const found = SKIN_TYPES.find(opt => {
+                  const key = opt.toLowerCase().includes('sensitive') ? 'sensitive_type' : opt.toLowerCase();
+                  const translated = t(key).toLowerCase();
+                  return lowerText.includes(opt.toLowerCase()) || lowerText.includes(translated);
+                });
+                if (found) setSkinType(found);
+              }}
+            />
+          </View>
           <View style={styles.options}>
-            {SKIN_TYPES.map((option) => (
-              <SelectionButton
-                key={option}
-                label={option}
-                selected={skinType === option}
-                onPress={() => setSkinType(option)}
-              />
-            ))}
+            {SKIN_TYPES.map((option) => {
+              const key = option.toLowerCase().includes('sensitive') ? 'sensitive_type' : option.toLowerCase();
+              return (
+                <SelectionButton
+                  key={option}
+                  label={t(key)}
+                  selected={skinType === option}
+                  onPress={() => setSkinType(option)}
+                />
+              );
+            })}
           </View>
 
-          <Text style={styles.label}>Sensitivity Level</Text>
+          <View style={styles.headerWithVoice}>
+            <Text style={styles.label}>{t('sensitivity')}</Text>
+            <VoiceInputButton
+              onTranscript={(text) => {
+                const lowerText = text.toLowerCase();
+                const found = SENSITIVITY_LEVELS.find(opt => {
+                  const key = opt.toLowerCase().replace(/\s+/g, '_');
+                  const translated = t(key).toLowerCase();
+                  return lowerText.includes(opt.toLowerCase()) || lowerText.includes(translated);
+                });
+                if (found) setSensitivity(found);
+              }}
+            />
+          </View>
           <View style={styles.options}>
-            {SENSITIVITY_LEVELS.map((option) => (
-              <SelectionButton
-                key={option}
-                label={option}
-                selected={sensitivity === option}
-                onPress={() => setSensitivity(option)}
-              />
-            ))}
+            {SENSITIVITY_LEVELS.map((option) => {
+              const key = option.toLowerCase().replace(/\s+/g, '_');
+              return (
+                <SelectionButton
+                  key={option}
+                  label={t(key)}
+                  selected={sensitivity === option}
+                  onPress={() => setSensitivity(option)}
+                />
+              );
+            })}
           </View>
 
           <TouchableOpacity
@@ -62,7 +95,7 @@ export default function SkinDetailsScreen() {
             onPress={handleNext}
             disabled={!isValid}
           >
-            <Text style={styles.buttonText}>Continue</Text>
+            <Text style={styles.buttonText}>{t('continue')}</Text>
           </TouchableOpacity>
         </ScrollView>
       </StepContainer>
@@ -83,6 +116,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#3D6B7A',
+  },
+  headerWithVoice: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
     marginTop: 8,
   },

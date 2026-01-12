@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { TRANSLATIONS } from '@/constants/translations';
+import { AnalysisResult, UserProfile } from '@/types/wizard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserProfile, AnalysisResult } from '@/types/wizard';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 interface WizardContextType {
   profile: UserProfile;
@@ -12,6 +13,7 @@ interface WizardContextType {
   currentStep: number;
   setCurrentStep: (step: number) => void;
   resetWizard: () => void;
+  t: (key: string) => string;
 }
 
 const WizardContext = createContext<WizardContextType | undefined>(undefined);
@@ -24,6 +26,7 @@ const INITIAL_PROFILE: UserProfile = {
   sensitivity: '',
   concerns: [],
   healthConditions: [],
+  language: 'en',
 };
 
 export function WizardProvider({ children }: { children: React.ReactNode }) {
@@ -93,6 +96,7 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
       currentStep,
       setCurrentStep,
       resetWizard,
+      t: (key: string) => TRANSLATIONS[profile.language]?.[key] || TRANSLATIONS.en[key] || key,
     }}>
       {children}
     </WizardContext.Provider>

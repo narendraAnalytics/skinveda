@@ -3,13 +3,43 @@ import { MetricCard } from '@/components/wizard/MetricCard';
 import { RecommendationCard } from '@/components/wizard/RecommendationCard';
 import { WizardColors, WizardFonts } from '@/constants/theme';
 import { useWizard } from '@/contexts/WizardContext';
+import { useApiClient } from '@/services/apiClient';
+import { Audio } from 'expo-av';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { useEffect } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { analysis, resetWizard, capturedImage } = useWizard();
+  const { analysis, resetWizard, capturedImage, profile, t } = useWizard();
+  const apiClient = useApiClient();
+
+  useEffect(() => {
+    if (analysis?.summary) {
+      speakSummary(analysis.summary);
+    }
+  }, [analysis]);
+
+  const speakSummary = async (text: string) => {
+    try {
+      const audioData = await apiClient.getTTS(text, profile.language);
+      if (audioData) {
+        const { sound } = await Audio.Sound.createAsync(
+          { uri: `data:audio/mpeg;base64,${audioData}` },
+          { shouldPlay: true }
+        );
+        // Automatically unload sound from memory when done
+        sound.setOnPlaybackStatusUpdate((status: any) => {
+          if (status.didJustFinish) {
+            sound.unloadAsync();
+          }
+        });
+      }
+    } catch (error) {
+      console.error('TTS Playback failed:', error);
+    }
+  };
 
   if (!analysis) {
     return (
@@ -20,7 +50,7 @@ export default function DashboardScreen() {
             style={styles.button}
             onPress={() => router.push('/(wizard)/welcome')}
           >
-            <Text style={styles.buttonText}>Start Over</Text>
+            <Text style={styles.buttonText}>{t('restart')}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -37,8 +67,8 @@ export default function DashboardScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Your Skin Analysis</Text>
-          <Text style={styles.subtitle}>AI-Powered Holistic Assessment</Text>
+          <Text style={styles.title}>{t('findings')}</Text>
+          <Text style={styles.subtitle}>{profile.name}'s Report</Text>
         </View>
 
         {/* Overall Score with Image */}
@@ -51,7 +81,7 @@ export default function DashboardScreen() {
               />
             </View>
           )}
-          <Text style={styles.scoreLabel}>OVERALL VITALITY SCORE</Text>
+          <Text style={styles.scoreLabel}>{t('vitality')}</Text>
           <Text style={styles.scoreValue}>{analysis.overallScore}</Text>
         </View>
 
@@ -59,21 +89,21 @@ export default function DashboardScreen() {
         <View style={styles.cardsRow}>
           <View style={styles.cardHalf}>
             <MetricCard
-              title="Eye Age"
-              value={`${analysis.eyeAge} yrs`}
+              title={t('eye_age')}
+              value={`${analysis.eyeAge} ${t('age_q')}`}
             />
           </View>
           <View style={styles.cardHalf}>
             <MetricCard
-              title="Skin Age"
-              value={`${analysis.skinAge} yrs`}
+              title={t('skin_age')}
+              value={`${analysis.skinAge} ${t('age_q')}`}
             />
           </View>
         </View>
 
         {/* Metrics Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Skin Metrics</Text>
+          <Text style={styles.sectionTitle}>{t('clinical')}</Text>
           <MetricBar label="Hydration" value={analysis.hydration} />
           <MetricBar label="Redness" value={analysis.redness} />
           <MetricBar label="Pigmentation" value={analysis.pigmentation} />
@@ -86,7 +116,7 @@ export default function DashboardScreen() {
 
         {/* Summary */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Summary</Text>
+          <Text style={styles.sectionTitle}>{t('reading_skin')}</Text>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryText}>{analysis.summary}</Text>
           </View>
@@ -94,56 +124,56 @@ export default function DashboardScreen() {
 
         {/* Diet Recommendations */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Diet Recommendations</Text>
+          <Text style={styles.sectionTitle}>{t('diet_guide')}</Text>
           <RecommendationCard
-            title="Rejuvenating Juices"
+            title={t('juices')}
             items={analysis.recommendations.diet.juices}
           />
           <RecommendationCard
-            title="Foods to Eat"
+            title={t('eat')}
             items={analysis.recommendations.diet.eat}
           />
           <RecommendationCard
-            title="Foods to Avoid"
+            title={t('avoid')}
             items={analysis.recommendations.diet.avoid}
           />
         </View>
 
         {/* Exercise Recommendations */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Exercise Recommendations</Text>
+          <Text style={styles.sectionTitle}>{t('exercise_protocol')}</Text>
           <RecommendationCard
-            title="Face Exercises"
+            title={t('face_exercises')}
             items={analysis.recommendations.exercises.face}
           />
           <RecommendationCard
-            title="Body Exercises"
+            title={t('lifestyle')}
             items={analysis.recommendations.exercises.body}
           />
         </View>
 
         {/* Mindfulness & Vedic Practices */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mindfulness & Vedic Practices</Text>
+          <Text style={styles.sectionTitle}>{t('stress_mindset')}</Text>
           <RecommendationCard
-            title="Yoga Poses"
+            title={t('yoga')}
             items={analysis.recommendations.yoga}
           />
           <RecommendationCard
-            title="Meditation Practices"
+            title={t('meditation')}
             items={analysis.recommendations.meditation}
           />
           <RecommendationCard
-            title="Stress Management"
+            title={t('stress_mindset')}
             items={analysis.recommendations.stressManagement}
           />
         </View>
 
         {/* Natural Remedies */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Natural Remedies</Text>
+          <Text style={styles.sectionTitle}>{t('remedies')}</Text>
           <RecommendationCard
-            title="Ayurvedic Solutions"
+            title={t('remedies')}
             items={analysis.recommendations.naturalRemedies}
           />
         </View>
@@ -151,7 +181,7 @@ export default function DashboardScreen() {
         {/* Action Buttons */}
         <View style={styles.actions}>
           <TouchableOpacity style={styles.button} onPress={handleReset}>
-            <Text style={styles.buttonText}>Return Home</Text>
+            <Text style={styles.buttonText}>{t('restart')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

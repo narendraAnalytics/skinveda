@@ -36,10 +36,10 @@ export class ApiClient {
     return result.data;
   }
 
-  async getTTS(text: string): Promise<string> {
+  async getTTS(text: string, language?: string): Promise<string> {
     const result = await this.request('/api/tts', {
       method: 'POST',
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({ text, language }),
     });
     return result.audioBase64;
   }
@@ -64,10 +64,10 @@ export class ApiClient {
     });
   }
 
-  async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav'): Promise<string> {
+  async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav', language?: string): Promise<string> {
     const result = await this.request('/api/transcribe', {
       method: 'POST',
-      body: JSON.stringify({ audioBase64, mimeType }),
+      body: JSON.stringify({ audioBase64, mimeType, language }),
     });
     return result.text || '';
   }

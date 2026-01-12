@@ -151,17 +151,24 @@ Skinveda integrates advanced AI capabilities from the `workingcode` directory to
 
 ### 🧠 Core AI Services
 
-#### **Skin Analysis Service (`services/geminiService.ts`)**
+#### **Skin Analysis & Transcription (`services/geminiService.ts`)**
 - **Engine**: `gemini-3-flash-preview`
 - **Capabilities**:
   - **Multimodal Analysis**: Processes user profiles and Base64 face images to provide clinical skin metrics.
   - **Holistic Prescription**: Generates personalized advice for diet (juices/foods), exercise (face yoga/body), stress management, and Vedic meditation.
-  - **Grounding**: Uses `googleSearch` to ensure recommendations are accurate and up-to-date.
-  - **TTS**: Utilizes `gemini-2.5-flash-preview-tts` for natural guidance during step transitions.
+  - **Transcription**: Provides accurate audio-to-text conversion for hands-free profile completion (Name, Age, etc.).
+- **TTS Engine**: `gemini-2.5-flash-preview-tts` (Voice: `Kore`)
 
-#### **Voice Assistant (`components/VoiceAssistant.tsx`)**
-- **Engine**: `gemini-2.5-flash-native-audio-preview-12-2025`
-- **Role**: A persistent, low-latency floating voice interface for hands-free onboarding and guidance.
+#### **Voice Assistance Implementation**
+- **Component**: `VoiceInputButton.tsx`
+- **MIME Type**: `audio/m4a` (Native Expo-AV recording format)
+- **Features**: Automatic numeric extraction for the age field (converts "twenty-five" to "25").
+
+### 🛠 Troubleshooting: Voice Fixes (2026 Update)
+If voice transcription fails (e.g., `404 Not Found` or `API Error`):
+1. **Model Standardization**: Ensure the backend uses `gemini-3-flash-preview` and `gemini-2.5-flash-preview-tts`. Older `1.5-flash` models may not be available in certain environments.
+2. **Format Mismatch**: The backend expects `audio/m4a` when processing Expo's native audio recordings. Labeling as `audio/wav` will cause processing errors.
+3. **Network Config**: Ensure `EXPO_PUBLIC_BACKEND_URL` in `.env` uses your machine's local IP (e.g., `192.168.x.x`) so physical devices can reach the backend.
 
 ### 📋 Integration Flow
 
@@ -173,3 +180,53 @@ Skinveda integrates advanced AI capabilities from the `workingcode` directory to
 4.  **Dashboard**: Displays clinical scores (Acne, Hydration, Lines, etc.) and the holistic routine.
 
 ---
+
+
+Made the language field optional in the UserProfile type definition to prevent errors without requiring database changes.
+
+
+Multi-language Support Implementation
+I have successfully implemented multi-language support in the Skinveda application. Users can now select their preferred language during the welcome step, and the entire app experience—including UI text, voice input, and AI analysis results—will be presented in that language.
+
+Key Changes
+1. Language Selection UI
+Integrated a language selection grid on the 
+welcome.tsx
+ screen.
+Supported languages: English, Hindi, Telugu, Marathi, and Kannada.
+The selected language is persisted in the 
+UserProfile
+ within the 
+WizardContext
+.
+2. Localization Infrastructure
+Created 
+translations.ts
+ containing all app strings for supported languages.
+Added a 
+t()
+ (translation) helper function to 
+WizardContext.tsx
+.
+Updated the 
+UserProfile
+ interface to include the language field.
+3. Wizard Screen Updates
+Updated all wizard steps to use the translation helper:
+
+welcome.tsx
+profile-name.tsx
+profile-bio.tsx
+skin-details.tsx
+concerns-health.tsx
+photo-capture.tsx
+4. Language-Aware AI Integration
+Skin Analysis: The backend 
+geminiService.ts
+ now includes the user's language in the prompt, forcing Gemini to return the analysis summary and recommendations in that language.
+Text-to-Speech (TTS): The dashboard now automatically reads out the analysis summary in the selected language using the updated 
+getTTS
+ method.
+Audio Transcription: The 
+VoiceInputButton.tsx
+ now passes the user's language to the backend, enabling accurate transcription of non-English speech.

@@ -1,15 +1,15 @@
+import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { WizardColors, WizardFonts } from '@/constants/theme';
-import { STEP_TEXTS } from '@/constants/wizardOptions';
+import { LANGUAGES } from '@/constants/translations';
 import { useWizard } from '@/contexts/WizardContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ProgressBar } from '@/components/wizard/ProgressBar';
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { setCurrentStep } = useWizard();
+  const { setCurrentStep, profile, updateProfile, t } = useWizard();
 
   const handleNext = () => {
     setCurrentStep(1);
@@ -43,23 +43,35 @@ export default function WelcomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.contentWrapper}>
-          <Text style={styles.title}>Welcome to SkinVeda</Text>
-          <Text style={styles.subtitle}>{STEP_TEXTS.welcome}</Text>
+          <Text style={styles.title}>{t('welcome')}</Text>
+          <Text style={styles.subtitle}>{t('welcome_subtitle')}</Text>
 
           <View style={styles.content}>
-            <Text style={styles.description}>
-              We'll analyze your skin using AI and provide personalized recommendations based on:
-            </Text>
-
-            <View style={styles.bulletPoints}>
-              <Text style={styles.bullet}>• Your skin profile and concerns</Text>
-              <Text style={styles.bullet}>• Health and lifestyle data</Text>
-              <Text style={styles.bullet}>• Facial analysis with our camera</Text>
-              <Text style={styles.bullet}>• Ancient Vedic wisdom combined with modern science</Text>
+            <View style={styles.languageSelection}>
+              <Text style={styles.languageLabel}>{t('select_lang')}</Text>
+              <View style={styles.languageGrid}>
+                {LANGUAGES.map((lang) => (
+                  <TouchableOpacity
+                    key={lang.id}
+                    style={[
+                      styles.languageButton,
+                      profile.language === lang.id && styles.languageButtonActive
+                    ]}
+                    onPress={() => updateProfile({ language: lang.id })}
+                  >
+                    <Text style={[
+                      styles.languageText,
+                      profile.language === lang.id && styles.languageTextActive
+                    ]}>
+                      {lang.native}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             <TouchableOpacity style={styles.button} onPress={handleNext}>
-              <Text style={styles.buttonText}>Begin Your Journey</Text>
+              <Text style={styles.buttonText}>{t('get_started')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -138,5 +150,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  languageSelection: {
+    marginBottom: 30,
+    marginTop: 10,
+  },
+  languageLabel: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#3D6B7A',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+    marginBottom: 12,
+  },
+  languageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  languageButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: '#E8E8E8',
+    backgroundColor: '#FFFFFF',
+    minWidth: '48%',
+  },
+  languageButtonActive: {
+    borderColor: WizardColors.emerald[500],
+    backgroundColor: WizardColors.emerald[50],
+  },
+  languageText: {
+    fontSize: 14,
+    color: '#3D6B7A',
+    textAlign: 'center',
+  },
+  languageTextActive: {
+    color: WizardColors.emerald[600],
+    fontWeight: '700',
   },
 });
