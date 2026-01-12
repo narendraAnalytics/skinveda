@@ -324,7 +324,45 @@ export const TRANSLATIONS: Record<string, any> = {
         yoga: "उपचारात्मक योग",
         meditation: "ध्यान आणि श्वास",
         remedies: "प्राचीन उपाय",
-        restart: "सत्र संपवा आणि पुन्हा सुरू करा"
+        restart: "सत्र संपवा आणि पुन्हा सुरू करा",
+        // Skin Types
+        oily: "तेलकट",
+        dry: "कोरडी",
+        combination: "मिश्र",
+        normal: "सामान्य",
+        sensitive_type: "संवेदनशील",
+        // Sensitivity Levels
+        very_sensitive: "खूप संवेदनशील",
+        moderately_sensitive: "मध्यम संवेदनशील",
+        slightly_sensitive: "थोडे संवेदनशील",
+        not_sensitive: "संवेदनशील नाही",
+        // Step Subtitles
+        welcome_subtitle: "SkinVeda मध्ये आपले स्वागत आहे, तुमचा वैयक्तिक स्किनकेअर सोबती. आम्ही तुम्हाला प्राचीन वैदिक ज्ञानासह आधुनिक AI एकत्र करून सर्वांगीण त्वचा विश्लेषणाद्वारे मार्गदर्शन करू.",
+        name_q_subtitle: "चला तुम्हाला ओळखून घेऊया. आम्ही तुम्हाला काय म्हणू?",
+        bio_subtitle: "आम्हाला स्वतःबद्दल थोडे अधिक सांगा जेणेकरून आम्ही तुमचा अनुभव वैयक्तिकृत करू शकू.",
+        skin_details_subtitle: "तुमच्या त्वचेचा प्रकार समजून घेतल्याने आम्हाला लक्ष्यित शिफारसी प्रदान करण्यात मदत होते.",
+        concerns_subtitle: "तुमच्या त्वचेच्या समस्या आणि सर्वांगीण आरोग्य समजून घेऊन एक सर्वसमावेशक योजना तयार करूया.",
+        capture_subtitle: "तुमचा सुंदर चेहरा कॅप्चर करण्याची वेळ आली आहे! चांगल्या विश्लेषणासाठी चांगल्या प्रकाशात रहा.",
+        // Genders
+        male: "पुरुष",
+        female: "स्त्री",
+        non_binary: "नॉन-बायनरी",
+        prefer_not_to_say: "सांगू इच्छित नाही",
+        // Skin Concerns
+        acne: "पुरळ (Acne)",
+        dark_spots: "काळे डाग",
+        fine_lines: "बारीक रेषा",
+        dryness_concern: "कोरडेपणा",
+        oiliness_concern: "तेलकटपणा",
+        redness_concern: "लालसरपणा",
+        large_pores: "मोठी छिद्रे",
+        uneven_tone: "असमान रंग",
+        // Health Conditions
+        high_stress: "जास्त ताण",
+        poor_sleep: "कमी झोप",
+        hormonal_changes: "हार्मोन्समधील बदल",
+        allergies: "अॅलर्जी",
+        none: "काहीही नाही"
     },
     kn: {
         welcome: "SkinVeda ಗೆ ಸುಸ್ವಾಗತ",
@@ -377,7 +415,45 @@ export const TRANSLATIONS: Record<string, any> = {
         yoga: "ಚಿಕಿತ್ಸಕ ಯೋಗ",
         meditation: "ಧ್ಯಾನ ಮತ್ತು ಉಸಿರು",
         remedies: "ಪ್ರಾಚೀನ ಪರಿಹಾರಗಳು",
-        restart: "ಸೆಶನ್ ಮುಗಿಸಿ ಮತ್ತು ಪುನರಾರಂಭಿಸಿ"
+        restart: "ಸೆಶನ್ ಮುಗಿಸಿ ಮತ್ತು ಪುನರಾರಂಭಿಸಿ",
+        // Skin Types
+        oily: "ಜಿಡ್ಡು ಚರ್ಮ",
+        dry: "ಒಣ ಚರ್ಮ",
+        combination: "ಮಿಶ್ರ ಚರ್ಮ",
+        normal: "ಸಾಮಾನ್ಯ ಚರ್ಮ",
+        sensitive_type: "ಸೂಕ್ಷ್ಮ ಚರ್ಮ",
+        // Sensitivity Levels
+        very_sensitive: "ಅತಿ ಸೂಕ್ಷ್ಮ",
+        moderately_sensitive: "ಸಾಧಾರಣ ಸೂಕ್ಷ್ಮ",
+        slightly_sensitive: "ಸ್ವಲ್ಪ ಸೂಕ್ಷ್ಮ",
+        not_sensitive: "ಸೂಕ್ಷ್ಮವಲ್ಲದ",
+        // Step Subtitles
+        welcome_subtitle: "SkinVeda ಗೆ ಸುಸ್ವಾಗತ, ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ತ್ವಚೆಯ ಸಂಗಾತಿ. ಆಧುನಿಕ AI ಜೊತೆಗೆ ಪ್ರಾಚೀನ ವೈದಿಕ ಜ್ಞಾನವನ್ನು ಸಂಯೋಜಿಸಿ ಸಮಗ್ರ ಚರ್ಮದ ವಿಶ್ಲೇಷಣೆಯ ಮೂಲಕ ನಾವು ನಿಮಗೆ ಮಾರ್ಗದರ್ಶನ ನೀಡುತ್ತೇವೆ.",
+        name_q_subtitle: "ನಿಮ್ಮ ಪರಿಚಯದೊಂದಿಗೆ ಪ್ರಾರಂಭಿಸೋಣ. ನಾವು ನಿಮ್ಮನ್ನು ಏನೆಂದು ಕರೆಯಬೇಕು?",
+        bio_subtitle: "ನಿಮ್ಮ ಬಗ್ಗೆ ನಮಗೆ ಇನ್ನು ಸ್ವಲ್ಪ ತಿಳಿಸಿ ಇದರಿಂದ ನಾವು ನಿಮ್ಮ ಅನುಭವವನ್ನು ವೈಯಕ್ತೀಕರಿಸಬಹುದು.",
+        skin_details_subtitle: "ನಿಮ್ಮ ಚರ್ಮದ ವಿಧವನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳುವುದು ನಮಗೆ ಗುರಿಿತ ಶಿಫಾರಸುಗಳನ್ನು ನೀಡಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
+        concerns_subtitle: "ಸಮಗ್ರ ಯೋಜನೆಯನ್ನು ರಚಿಸಲು ನಿಮ್ಮ ಚರ್ಮದ ಕಾಳಜಿಗಳು ಮತ್ತು ಒಟ್ಟಾರೆ ಆರೋಗ್ಯವನ್ನು ಅನ್ವೇಷಿಸೋಣ.",
+        capture_subtitle: "ನಿಮ್ಮ ಸುಂದರ ಮುಖವನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡುವ ಸಮಯ! ಉತ್ತಮ ವಿಶ್ಲೇಷಣೆಗಾಗಿ ಉತ್ತಮ ಬೆಳಕಿನಲ್ಲಿರಿ.",
+        // Genders
+        male: "ಪುರುಷ",
+        female: "ಮಹಿಳೆ",
+        non_binary: "ನಾನ್-ಬೈನರಿ",
+        prefer_not_to_say: "ಹೇಳಲು ಇಷ್ಟವಿಲ್ಲ",
+        // Skin Concerns
+        acne: "ಮೊಡವೆ",
+        dark_spots: "ಕಪ್ಪು ಚುಕ್ಕೆಗಳು",
+        fine_lines: "ಸೂಕ್ಷ್ಮ ರೇಖೆಗಳು",
+        dryness_concern: "ಒಣಗುವಿಕೆ",
+        oiliness_concern: "ಜಿಡ್ಡಿನಂಶ",
+        redness_concern: "ಕೆಂಪಾಗುವಿಕೆ",
+        large_pores: "ದೊಡ್ಡ ರಂಧ್ರಗಳು",
+        uneven_tone: "ಅಸಮತೋಲಿತ ವರ್ಣ",
+        // Health Conditions
+        high_stress: "ಅತಿ ಒತ್ತಡ",
+        poor_sleep: "ಕಡಿಮೆ ನಿದ್ರೆ",
+        hormonal_changes: "ಹಾರ್ಮೋನ್ ಬದಲಾವಣೆಗಳು",
+        allergies: "ಅಲರ್ಜಿಗಳು",
+        none: "ಯಾವುದೂ ಇಲ್ಲ"
     }
 };
 

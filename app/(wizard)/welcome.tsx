@@ -9,9 +9,10 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-nati
 
 export default function WelcomeScreen() {
   const router = useRouter();
-  const { setCurrentStep, profile, updateProfile, t } = useWizard();
+  const { setCurrentStep, profile, updateProfile, resetWizard, t } = useWizard();
 
   const handleNext = () => {
+    resetWizard(true);
     setCurrentStep(1);
     router.push('/(wizard)/profile-name');
   };

@@ -12,7 +12,7 @@ interface WizardContextType {
   setAnalysis: (result: AnalysisResult | null) => void;
   currentStep: number;
   setCurrentStep: (step: number) => void;
-  resetWizard: () => void;
+  resetWizard: (preserveLanguage?: boolean) => void;
   t: (key: string) => string;
 }
 
@@ -77,8 +77,8 @@ export function WizardProvider({ children }: { children: React.ReactNode }) {
     setProfile(prev => ({ ...prev, ...updates }));
   };
 
-  const resetWizard = async () => {
-    setProfile(INITIAL_PROFILE);
+  const resetWizard = async (preserveLanguage: boolean = false) => {
+    setProfile(prev => preserveLanguage ? { ...INITIAL_PROFILE, language: prev.language } : INITIAL_PROFILE);
     setCapturedImage(null);
     setAnalysis(null);
     setCurrentStep(0);
