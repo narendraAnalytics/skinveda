@@ -80,16 +80,28 @@ export default function GradientScreen() {
         />
       </TouchableOpacity>
       {isSignedIn && user && (
-        <TouchableOpacity
-          style={styles.profileButtonTop}
-          onPress={() => router.push('/profile')}
-        >
-          <MaterialCommunityIcons
-            name="account-circle"
-            size={24}
-            color="#E8B4B8"
-          />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            style={styles.profileButtonTop}
+            onPress={() => router.push('/profile')}
+          >
+            <MaterialCommunityIcons
+              name="account-circle"
+              size={24}
+              color="#E8B4B8"
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.historyButtonTop}
+            onPress={() => router.push('/history')}
+          >
+            <MaterialCommunityIcons
+              name="history"
+              size={24}
+              color="#E8B4B8"
+            />
+          </TouchableOpacity>
+        </>
       )}
       <Image
         source={require('../public/images/logoskinveda.png')}
@@ -294,6 +306,18 @@ const styles = StyleSheet.create({
     top: 50,
     left: '50%',
     marginLeft: -22,
+    zIndex: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    padding: 12,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  historyButtonTop: {
+    position: 'absolute',
+    top: 50,
+    left: '50%',
+    marginLeft: 30,
     zIndex: 10,
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
     padding: 12,

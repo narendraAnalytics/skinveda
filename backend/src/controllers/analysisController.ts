@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { SkinAnalysisService } from '../services/geminiService';
+import { DatabaseService } from '../services/dbService';
 
 const profileSchema = z.object({
   name: z.string(),
@@ -26,11 +27,21 @@ const analyzeSchema = z.object({
 export async function handleAnalyze(req: Request, res: Response) {
   try {
     const { profile, imageBase64 } = analyzeSchema.parse(req.body);
+    const userId = (req as any).user.sub;
 
+    // Get AI analysis
     const service = new SkinAnalysisService();
     const result = await service.analyzeSkin(profile, imageBase64);
 
-    res.json({ success: true, data: result });
+    // Save to database
+    const dbService = new DatabaseService();
+    const analysisId = await dbService.saveAnalysis(userId, profile, result);
+
+    res.json({
+      success: true,
+      data: result,
+      analysisId,
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Invalid request data', details: error.issues });

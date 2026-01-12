@@ -1,4 +1,4 @@
-import { AnalysisResult, UserProfile } from '@/types/wizard';
+import { AnalysisResult, UserProfile, AnalysisListItem, StoredAnalysis } from '@/types/wizard';
 import { useAuth } from '@clerk/clerk-expo';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:3000';
@@ -40,6 +40,26 @@ export class ApiClient {
       body: JSON.stringify({ text }),
     });
     return result.audioBase64;
+  }
+
+  async getAnalyses(): Promise<AnalysisListItem[]> {
+    const result = await this.request('/api/analyses', {
+      method: 'GET',
+    });
+    return result.data;
+  }
+
+  async getAnalysisById(id: string): Promise<StoredAnalysis> {
+    const result = await this.request(`/api/analyses/${id}`, {
+      method: 'GET',
+    });
+    return result.data;
+  }
+
+  async deleteAnalysis(id: string): Promise<void> {
+    await this.request(`/api/analyses/${id}`, {
+      method: 'DELETE',
+    });
   }
 }
 

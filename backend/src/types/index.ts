@@ -46,3 +46,19 @@ export interface AnalysisResult {
     stressManagement: string[];
   };
 }
+
+export interface StoredAnalysis {
+  id: string;
+  userId: string;
+  createdAt: Date;
+  profile: UserProfile;
+  analysis: AnalysisResult;
+}
+
+export interface AnalysisListItem {
+  id: string;
+  createdAt: string;
+  overallScore: number;
+  skinAge: number;
+  eyeAge: number;
+}

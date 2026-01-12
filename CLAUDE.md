@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Runtime**: React 19.1.0, React Native 0.81.5
 - **Authentication**: Clerk v2.19.14 with OAuth support (Google, GitHub, LinkedIn)
 - **Backend**: Node.js/Express with TypeScript
+- **Database**: Neon PostgreSQL with Drizzle ORM 0.45.1
 - **AI Engine**: Google Gemini API (gemini-3-flash-preview for analysis, gemini-2.5-flash-preview-tts for voice)
 - **Package**: `com.saasaideveloper.skinveda`
 
@@ -46,6 +47,11 @@ npm run dev
 npm run build           # Compile TypeScript to dist/
 npm start              # Run compiled JavaScript
 
+# Database migrations (Drizzle ORM)
+npx drizzle-kit generate   # Generate migrations from schema changes
+npx drizzle-kit push       # Push schema to database
+npx drizzle-kit studio     # Open Drizzle Studio (database GUI)
+
 # One-time setup (already done)
 npm install
 ```
@@ -68,6 +74,9 @@ app/
 ├── _layout.tsx              # Root layout with ClerkProvider
 ├── index.tsx                # Landing page with video background
 ├── profile.tsx              # User profile view
+├── history.tsx              # Analysis history list screen
+├── analysis/
+│   └── [id].tsx             # Dynamic route: View saved analysis by ID
 ├── (auth)/                  # Auth route group (hidden from URL)
 │   ├── _layout.tsx          # Redirect logic for authenticated users
 │   ├── sign-in.tsx          # Email/password + OAuth sign in
@@ -90,6 +99,8 @@ app/
 - Wizard group `(wizard)/_layout.tsx` redirects unauthenticated users to sign-in and wraps wizard in `<WizardProvider>`
 - Home screen (`index.tsx`) shows "Glow Guide" button to start wizard at `/wizard/welcome`
 - Profile screen (`profile.tsx`) displays user information and connected OAuth accounts
+- History screen (`history.tsx`) lists all saved analyses for the user (max 20, auto-pruned)
+- Dynamic route `analysis/[id].tsx` displays full details of a specific saved analysis
 
 ### Backend API Architecture
 
@@ -101,14 +112,22 @@ backend/
 │   ├── server.ts                    # Express app entry point
 │   ├── types/index.ts               # Shared type definitions
 │   ├── middleware/auth.ts           # Clerk JWT verification
-│   ├── services/geminiService.ts    # AI analysis & TTS
+│   ├── services/
+│   │   ├── geminiService.ts         # AI analysis & TTS
+│   │   └── dbService.ts             # Database operations (Drizzle)
+│   ├── db/
+│   │   ├── index.ts                 # Database connection
+│   │   └── schema.ts                # Drizzle schema definitions
 │   ├── controllers/
 │   │   ├── analysisController.ts    # POST /api/analyze
+│   │   ├── analysesController.ts    # GET/DELETE /api/analyses
 │   │   └── ttsController.ts         # POST /api/tts
 │   └── routes/api.ts                # Route definitions
+├── drizzle/                         # Generated migrations
+├── drizzle.config.ts                # Drizzle Kit configuration
 ├── package.json
 ├── tsconfig.json
-└── .env                             # GEMINI_API_KEY, CLERK_SECRET_KEY, PORT
+└── .env                             # GEMINI_API_KEY, CLERK_SECRET_KEY, DATABASE_URL, PORT
 ```
 
 **API Endpoints:**
@@ -116,7 +135,16 @@ backend/
 - `GET /health` - Health check (no auth required)
 - `POST /api/analyze` - Skin analysis (requires Clerk auth token)
   - Body: `{ profile: UserProfile, imageBase64: string }`
-  - Returns: `{ data: AnalysisResult }`
+  - Returns: `{ success: true, data: AnalysisResult, analysisId: string }`
+  - Automatically saves analysis to database
+- `GET /api/analyses` - List all saved analyses for user (requires auth)
+  - Returns: `{ success: true, data: AnalysisListItem[] }`
+  - Sorted by creation date (newest first)
+- `GET /api/analyses/:id` - Get single analysis by ID (requires auth)
+  - Returns: `{ success: true, data: StoredAnalysis }`
+  - Includes full profile + analysis details
+- `DELETE /api/analyses/:id` - Delete analysis (requires auth)
+  - Returns: `{ success: true, message: string }`
 - `POST /api/tts` - Text-to-speech (requires Clerk auth token)
   - Body: `{ text: string }`
   - Returns: `{ audioBase64: string }`
@@ -175,6 +203,36 @@ useEffect(() => {
 if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />;
 ```
 
+### Database Layer (Neon + Drizzle ORM)
+
+**Database Schema** (`backend/src/db/schema.ts`):
+
+- Single table: `skin_analyses`
+- Primary key: UUID (auto-generated)
+- Indexed on: `userId` + `createdAt` (descending)
+- Stores: User profile snapshot + analysis metrics + recommendations
+
+**DatabaseService** (`backend/src/services/dbService.ts`):
+
+Key methods:
+- `saveAnalysis(userId, profile, analysis)` - Insert new analysis, auto-enforce 20-limit
+- `getUserAnalyses(userId)` - List all analyses (newest first)
+- `getAnalysisById(id, userId)` - Fetch single analysis with full details
+- `deleteAnalysis(id, userId)` - Delete specific analysis
+- `enforceUserLimit(userId)` - Private: Auto-delete oldest analyses when count > 20
+
+**Important Behavior:**
+
+- Each user is limited to 20 saved analyses
+- When 21st analysis is saved, oldest is automatically deleted
+- All queries validate userId to prevent unauthorized access
+
+**Connection:**
+
+- Uses `@neondatabase/serverless` for Neon PostgreSQL
+- Connection string from `DATABASE_URL` environment variable
+- Drizzle ORM handles query building and type safety
+
 ### State Management
 
 **WizardContext** (`contexts/WizardContext.tsx`):
@@ -212,8 +270,17 @@ if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />;
 ```typescript
 const apiClient = useApiClient();
 
-// Call analysis
+// Call analysis (saves to database automatically)
 const result = await apiClient.analyzeSkin(profile, imageBase64);
+
+// Get analysis history
+const analyses = await apiClient.getAnalyses();
+
+// Get single analysis by ID
+const analysis = await apiClient.getAnalysisById(id);
+
+// Delete analysis
+await apiClient.deleteAnalysis(id);
 
 // Get TTS audio
 const audioBase64 = await apiClient.getTTS("Hello world");
@@ -338,6 +405,7 @@ EXPO_PUBLIC_GOOGLE_CLIENT_ID=  # For OAuth setup
 # backend/.env file (required)
 GEMINI_API_KEY=your_gemini_api_key
 CLERK_SECRET_KEY=sk_test_...
+DATABASE_URL=postgresql://...  # Neon PostgreSQL connection string
 PORT=3000  # Optional, defaults to 3000
 ```
 
@@ -375,10 +443,14 @@ redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' })
 | `express` | HTTP server framework |
 | `@clerk/clerk-sdk-node` | JWT verification |
 | `@google/genai` | Gemini AI SDK |
+| `@neondatabase/serverless` | Neon PostgreSQL driver |
+| `drizzle-orm` | TypeScript ORM for database queries |
+| `drizzle-kit` | Schema migrations and studio (dev) |
 | `cors` | CORS middleware |
 | `dotenv` | Environment variable loading |
 | `winston` | Logging |
 | `zod` | Runtime validation |
+| `uuid` | UUID generation |
 | `typescript` | Type safety |
 | `ts-node` | TypeScript execution |
 | `nodemon` | Hot reload in development |
@@ -613,6 +685,31 @@ const backgroundColor = useThemeColor({}, 'background');
 3. Add method to ApiClient in `services/apiClient.ts`
 4. Import and use in React components
 
+### Working with Database
+
+```typescript
+import { DatabaseService } from '@/backend/src/services/dbService';
+
+const dbService = new DatabaseService();
+
+// Save analysis after AI processing
+const analysisId = await dbService.saveAnalysis(userId, profile, analysisResult);
+
+// Query user's history
+const analyses = await dbService.getUserAnalyses(userId);
+
+// Get specific analysis
+const analysis = await dbService.getAnalysisById(id, userId);
+```
+
+### Making Database Schema Changes
+
+1. Edit `backend/src/db/schema.ts`
+2. Generate migration: `npx drizzle-kit generate`
+3. Review generated SQL in `backend/drizzle/`
+4. Push to database: `npx drizzle-kit push`
+5. Update TypeScript types in `backend/src/types/index.ts`
+
 ## Testing & Quality
 
 - **Linting**: ESLint with `eslint-config-expo`
@@ -627,3 +724,4 @@ const backgroundColor = useThemeColor({}, 'background');
 - Dashboard "Share Results" feature not implemented
 - No backend deployment configuration (currently local only)
 - Health data integration (wearables) not yet implemented
+- Analysis images are not currently stored in database (only metrics/recommendations)
