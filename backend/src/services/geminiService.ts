@@ -1,7 +1,7 @@
 
-import 'dotenv/config';
 import { GoogleGenAI, Type } from "@google/genai";
-import { UserProfile, AnalysisResult } from "../types";
+import 'dotenv/config';
+import { AnalysisResult, UserProfile } from "../types";
 
 export class SkinAnalysisService {
   private ai: GoogleGenAI;
@@ -117,5 +117,19 @@ export class SkinAnalysisService {
     });
 
     return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || '';
+  }
+
+  async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav'): Promise<string> {
+    const response = await this.ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: [{
+        parts: [
+          { text: 'Transcribe this audio clearly. Return only the spoken text without any formatting or extra words.' },
+          { inlineData: { mimeType, data: audioBase64 } }
+        ]
+      }]
+    });
+
+    return response.text?.trim() || '';
   }
 }

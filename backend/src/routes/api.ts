@@ -7,6 +7,7 @@ import {
   handleGetAnalysisById,
   handleDeleteAnalysis,
 } from '../controllers/analysesController';
+import { handleTranscribe } from '../controllers/transcriptionController';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ router.use(requireAuth);
 
 router.post('/analyze', handleAnalyze);
 router.post('/tts', handleTTS);
+router.post('/transcribe', handleTranscribe);
 
 // Analysis history routes
 router.get('/analyses', handleGetAnalyses);

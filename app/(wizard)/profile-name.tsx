@@ -1,5 +1,6 @@
 import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { StepContainer } from '@/components/wizard/StepContainer';
+import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
 import { WizardColors } from '@/constants/theme';
 import { STEP_TEXTS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
@@ -32,16 +33,24 @@ export default function ProfileNameScreen() {
         subtitle={STEP_TEXTS.profileName}
       >
         <View style={styles.content}>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your name"
-            placeholderTextColor="rgba(61, 107, 122, 0.4)"
-            value={name}
-            onChangeText={setName}
-            autoFocus
-            returnKeyType="next"
-            onSubmitEditing={handleNext}
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your name"
+              placeholderTextColor="rgba(61, 107, 122, 0.4)"
+              value={name}
+              onChangeText={setName}
+              autoFocus
+              returnKeyType="next"
+              onSubmitEditing={handleNext}
+            />
+            <View style={styles.voiceButton}>
+              <VoiceInputButton
+                onTranscript={(text) => setName(text)}
+                disabled={false}
+              />
+            </View>
+          </View>
 
           <TouchableOpacity
             style={[styles.button, !name.trim() && styles.buttonDisabled]}
@@ -67,6 +76,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingBottom: 40,
   },
+  inputContainer: {
+    position: 'relative',
+    marginBottom: 32,
+  },
   input: {
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderWidth: 2,
@@ -74,9 +87,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 16,
+    paddingRight: 70,
     fontSize: 18,
     color: '#3D6B7A',
-    marginBottom: 32,
+  },
+  voiceButton: {
+    position: 'absolute',
+    right: 10,
+    top: 8,
   },
   button: {
     backgroundColor: WizardColors.emerald[600],

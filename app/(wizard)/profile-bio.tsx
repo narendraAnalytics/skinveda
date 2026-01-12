@@ -1,6 +1,7 @@
 import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { SelectionButton } from '@/components/wizard/SelectionButton';
 import { StepContainer } from '@/components/wizard/StepContainer';
+import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
 import { WizardColors } from '@/constants/theme';
 import { GENDERS, STEP_TEXTS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
@@ -37,15 +38,27 @@ export default function ProfileBioScreen() {
       >
         <View style={styles.content}>
           <Text style={styles.label}>Age</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your age"
-            placeholderTextColor="rgba(61, 107, 122, 0.4)"
-            value={age}
-            onChangeText={setAge}
-            keyboardType="numeric"
-            returnKeyType="done"
-          />
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter your age"
+              placeholderTextColor="rgba(61, 107, 122, 0.4)"
+              value={age}
+              onChangeText={setAge}
+              keyboardType="numeric"
+              returnKeyType="done"
+            />
+            <View style={styles.voiceButton}>
+              <VoiceInputButton
+                onTranscript={(text) => {
+                  // Extract numbers from transcribed text
+                  const numericValue = text.replace(/[^0-9]/g, '');
+                  setAge(numericValue);
+                }}
+                disabled={false}
+              />
+            </View>
+          </View>
 
           <Text style={styles.label}>Gender</Text>
           <View style={styles.options}>
@@ -89,6 +102,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginTop: 8,
   },
+  inputContainer: {
+    position: 'relative',
+    marginBottom: 24,
+  },
   input: {
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
     borderWidth: 2,
@@ -96,9 +113,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 20,
     paddingVertical: 16,
+    paddingRight: 70,
     fontSize: 18,
     color: '#3D6B7A',
-    marginBottom: 24,
+  },
+  voiceButton: {
+    position: 'absolute',
+    right: 10,
+    top: 8,
   },
   options: {
     marginBottom: 24,

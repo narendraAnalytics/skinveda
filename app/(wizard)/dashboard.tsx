@@ -4,12 +4,12 @@ import { RecommendationCard } from '@/components/wizard/RecommendationCard';
 import { WizardColors, WizardFonts } from '@/constants/theme';
 import { useWizard } from '@/contexts/WizardContext';
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { analysis, resetWizard } = useWizard();
+  const { analysis, resetWizard, capturedImage } = useWizard();
 
   if (!analysis) {
     return (
@@ -41,10 +41,18 @@ export default function DashboardScreen() {
           <Text style={styles.subtitle}>AI-Powered Holistic Assessment</Text>
         </View>
 
-        {/* Overall Score */}
+        {/* Overall Score with Image */}
         <View style={styles.scoreContainer}>
+          {capturedImage && (
+            <View style={styles.imageWrapper}>
+              <Image
+                source={{ uri: capturedImage }}
+                style={styles.capturedImage}
+              />
+            </View>
+          )}
+          <Text style={styles.scoreLabel}>OVERALL VITALITY SCORE</Text>
           <Text style={styles.scoreValue}>{analysis.overallScore}</Text>
-          <Text style={styles.scoreLabel}>Overall Score</Text>
         </View>
 
         {/* Age Cards */}
@@ -182,15 +190,30 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: WizardColors.emerald[500],
   },
-  scoreValue: {
-    fontSize: 64,
-    fontWeight: '700',
-    color: WizardColors.emerald[500],
+  imageWrapper: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 3,
+    borderColor: WizardColors.emerald[500],
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  capturedImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   scoreLabel: {
     fontSize: 16,
     color: '#3D6B7A',
-    marginTop: 8,
+    marginBottom: 8,
+    fontWeight: '600',
+  },
+  scoreValue: {
+    fontSize: 64,
+    fontWeight: '700',
+    color: WizardColors.emerald[500],
   },
   cardsRow: {
     flexDirection: 'row',

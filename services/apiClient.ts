@@ -1,4 +1,4 @@
-import { AnalysisResult, UserProfile, AnalysisListItem, StoredAnalysis } from '@/types/wizard';
+import { AnalysisListItem, AnalysisResult, StoredAnalysis, UserProfile } from '@/types/wizard';
 import { useAuth } from '@clerk/clerk-expo';
 
 const API_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:3000';
@@ -20,7 +20,9 @@ export class ApiClient {
     });
 
     if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`);
+      const errorBody = await response.text();
+      console.error(`[API Error] Status: ${response.status}, Body: ${errorBody}`);
+      throw new Error(`API error: ${response.statusText} (${response.status})`);
     }
 
     return response.json();
@@ -60,6 +62,14 @@ export class ApiClient {
     await this.request(`/api/analyses/${id}`, {
       method: 'DELETE',
     });
+  }
+
+  async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav'): Promise<string> {
+    const result = await this.request('/api/transcribe', {
+      method: 'POST',
+      body: JSON.stringify({ audioBase64, mimeType }),
+    });
+    return result.text || '';
   }
 }
 
