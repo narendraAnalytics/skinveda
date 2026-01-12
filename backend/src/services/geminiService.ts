@@ -119,7 +119,32 @@ export class SkinAnalysisService {
       }
     });
 
-    return response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || '';
+    const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data || '';
+    if (!audioData) return '';
+
+    return this.pcmToWav(audioData);
+  }
+
+  private pcmToWav(pcmBase64: string, sampleRate: number = 24000): string {
+    const pcmBuffer = Buffer.from(pcmBase64, 'base64');
+    const dataSize = pcmBuffer.length;
+    const header = Buffer.alloc(44);
+
+    header.write('RIFF', 0);
+    header.writeUInt32LE(36 + dataSize, 4);
+    header.write('WAVE', 8);
+    header.write('fmt ', 12);
+    header.writeUInt32LE(16, 16);
+    header.writeUInt16LE(1, 20); // PCM
+    header.writeUInt16LE(1, 22); // Mono
+    header.writeUInt32LE(sampleRate, 24);
+    header.writeUInt32LE(sampleRate * 2, 28); // Byte rate (sampleRate * bitsPerSample/8 * channels)
+    header.writeUInt16LE(2, 32); // Block align (bitsPerSample/8 * channels)
+    header.writeUInt16LE(16, 34); // Bits per sample
+    header.write('data', 36);
+    header.writeUInt32LE(dataSize, 40);
+
+    return Buffer.concat([header, pcmBuffer]).toString('base64');
   }
 
   async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav', language: string = 'en'): Promise<string> {

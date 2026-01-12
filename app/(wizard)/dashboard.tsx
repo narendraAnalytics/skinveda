@@ -26,7 +26,7 @@ export default function DashboardScreen() {
       const audioData = await apiClient.getTTS(text, profile.language);
       if (audioData) {
         const { sound } = await Audio.Sound.createAsync(
-          { uri: `data:audio/mpeg;base64,${audioData}` },
+          { uri: `data:audio/wav;base64,${audioData}` },
           { shouldPlay: true }
         );
         // Automatically unload sound from memory when done

@@ -1,7 +1,6 @@
 import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { SelectionButton } from '@/components/wizard/SelectionButton';
 import { StepContainer } from '@/components/wizard/StepContainer';
-import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
 import { WizardColors } from '@/constants/theme';
 import { HEALTH_CONDITIONS, SKIN_CONCERNS } from '@/constants/wizardOptions';
 import { useWizard } from '@/contexts/WizardContext';
@@ -50,20 +49,7 @@ export default function ConcernsHealthScreen() {
         subtitle={t('concerns_subtitle')}
       >
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.headerWithVoice}>
-            <Text style={styles.label}>{t('main_concerns')}</Text>
-            <VoiceInputButton
-              onTranscript={(text) => {
-                const lowerText = text.toLowerCase();
-                const found = SKIN_CONCERNS.find(opt => {
-                  const key = opt.toLowerCase().replace(/\s+/g, '_').replace('dryness', 'dryness_concern').replace('oiliness', 'oiliness_concern');
-                  const translated = t(key).toLowerCase();
-                  return lowerText.includes(opt.toLowerCase()) || lowerText.includes(translated);
-                });
-                if (found) toggleConcern(found);
-              }}
-            />
-          </View>
+          <Text style={styles.label}>{t('main_concerns')}</Text>
           <View style={styles.options}>
             {SKIN_CONCERNS.map((concern) => {
               const key = concern.toLowerCase().replace(/\s+/g, '_').replace('dryness', 'dryness_concern').replace('oiliness', 'oiliness_concern');
@@ -78,20 +64,7 @@ export default function ConcernsHealthScreen() {
             })}
           </View>
 
-          <View style={styles.headerWithVoice}>
-            <Text style={styles.label}>{t('lifestyle')}</Text>
-            <VoiceInputButton
-              onTranscript={(text) => {
-                const lowerText = text.toLowerCase();
-                const found = HEALTH_CONDITIONS.find(opt => {
-                  const key = opt.toLowerCase().replace(/\s+/g, '_');
-                  const translated = t(key).toLowerCase();
-                  return lowerText.includes(opt.toLowerCase()) || lowerText.includes(translated);
-                });
-                if (found) toggleHealthCondition(found);
-              }}
-            />
-          </View>
+          <Text style={styles.label}>{t('lifestyle')}</Text>
           <View style={styles.options}>
             {HEALTH_CONDITIONS.map((condition) => {
               const key = condition.toLowerCase().replace(/\s+/g, '_');
@@ -132,13 +105,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#3D6B7A',
-  },
-  headerWithVoice: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
     marginTop: 8,
+    marginBottom: 12,
   },
   options: {
     marginBottom: 24,
