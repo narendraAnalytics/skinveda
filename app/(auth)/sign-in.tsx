@@ -64,8 +64,8 @@ export default function SignInScreen() {
       setLoadingProvider(provider);
 
       const oauthFlow = provider === 'google' ? googleOAuth
-                      : provider === 'github' ? githubOAuth
-                      : linkedinOAuth;
+        : provider === 'github' ? githubOAuth
+          : linkedinOAuth;
 
       const { createdSessionId, setActive: oauthSetActive, signIn: oauthSignIn } = await oauthFlow.startOAuthFlow({
         redirectUrl: Linking.createURL('/(auth)/sign-in', { scheme: 'skinveda' }),
@@ -90,7 +90,7 @@ export default function SignInScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <Text style={styles.title}>Welcome Back</Text>
@@ -161,7 +161,7 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -182,20 +182,22 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: 'rgba(232, 180, 184, 0.7)',
+    color: '#4A7C8C',
     marginBottom: 30,
     textAlign: 'center',
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
     color: '#E8B4B8',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 180, 184, 0.2)',
   },
   button: {
-    backgroundColor: 'rgba(232, 180, 184, 0.2)',
+    backgroundColor: '#E8B4B8',
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 35,
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   buttonText: {
-    color: '#E8B4B8',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
@@ -236,7 +238,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(232, 180, 184, 0.3)',
   },
   dividerText: {
-    color: 'rgba(232, 180, 184, 0.7)',
+    color: '#4A7C8C',
     fontSize: 14,
     marginHorizontal: 10,
   },

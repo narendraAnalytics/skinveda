@@ -89,8 +89,8 @@ export default function SignUpScreen() {
       setLoadingProvider(provider);
 
       const oauthFlow = provider === 'google' ? googleOAuth
-                      : provider === 'github' ? githubOAuth
-                      : linkedinOAuth;
+        : provider === 'github' ? githubOAuth
+          : linkedinOAuth;
 
       const { createdSessionId, setActive: oauthSetActive, signUp: oauthSignUp } = await oauthFlow.startOAuthFlow({
         redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' }),
@@ -142,7 +142,7 @@ export default function SignUpScreen() {
   if (pendingVerification) {
     return (
       <View style={styles.container}>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <View style={styles.formContainer}>
           <Text style={styles.title}>Verify your email</Text>
           <Text style={styles.subtitle}>
@@ -169,11 +169,36 @@ export default function SignUpScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <Text style={styles.title}>Create Account</Text>
           <Text style={styles.subtitle}>Join Skinveda today</Text>
+
+          <OAuthButton
+            provider="google"
+            onPress={() => handleOAuthSignUp('google')}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'google'}
+          />
+          <OAuthButton
+            provider="github"
+            onPress={() => handleOAuthSignUp('github')}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'github'}
+          />
+          <OAuthButton
+            provider="linkedin"
+            onPress={() => handleOAuthSignUp('linkedin')}
+            disabled={loadingProvider !== null}
+            loading={loadingProvider === 'linkedin'}
+          />
+
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>Or continue with</Text>
+            <View style={styles.dividerLine} />
+          </View>
 
           <TextInput
             style={styles.input}
@@ -206,31 +231,6 @@ export default function SignUpScreen() {
           <TouchableOpacity style={styles.button} onPress={onSignUpPress}>
             <Text style={styles.buttonText}>Continue</Text>
           </TouchableOpacity>
-
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>Or continue with</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <OAuthButton
-            provider="google"
-            onPress={() => handleOAuthSignUp('google')}
-            disabled={loadingProvider !== null}
-            loading={loadingProvider === 'google'}
-          />
-          <OAuthButton
-            provider="github"
-            onPress={() => handleOAuthSignUp('github')}
-            disabled={loadingProvider !== null}
-            loading={loadingProvider === 'github'}
-          />
-          <OAuthButton
-            provider="linkedin"
-            onPress={() => handleOAuthSignUp('linkedin')}
-            disabled={loadingProvider !== null}
-            loading={loadingProvider === 'linkedin'}
-          />
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>Already have an account? </Text>
@@ -304,7 +304,7 @@ export default function SignUpScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -325,20 +325,22 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: 'rgba(232, 180, 184, 0.7)',
+    color: '#4A7C8C',
     marginBottom: 30,
     textAlign: 'center',
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 15,
     marginBottom: 15,
     fontSize: 16,
     color: '#E8B4B8',
+    borderWidth: 1,
+    borderColor: 'rgba(232, 180, 184, 0.2)',
   },
   button: {
-    backgroundColor: 'rgba(232, 180, 184, 0.2)',
+    backgroundColor: '#E8B4B8',
     borderRadius: 25,
     paddingVertical: 15,
     paddingHorizontal: 35,
@@ -349,7 +351,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   buttonText: {
-    color: '#E8B4B8',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
@@ -379,27 +381,27 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(232, 180, 184, 0.3)',
   },
   dividerText: {
-    color: 'rgba(232, 180, 184, 0.7)',
+    color: '#4A7C8C',
     fontSize: 14,
     marginHorizontal: 10,
   },
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(26, 26, 26, 0.8)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
   },
   modalContent: {
-    backgroundColor: '#1a1a1a',
+    backgroundColor: '#F5F3EF',
     borderRadius: 20,
     padding: 25,
     width: '100%',
     maxWidth: 350,
-    shadowColor: '#E8B4B8',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
   },
   modalTitle: {
@@ -411,7 +413,7 @@ const styles = StyleSheet.create({
   },
   modalSubtitle: {
     fontSize: 14,
-    color: 'rgba(232, 180, 184, 0.6)',
+    color: '#4A7C8C',
     marginBottom: 20,
     textAlign: 'center',
   },
