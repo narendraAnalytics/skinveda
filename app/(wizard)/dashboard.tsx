@@ -4,9 +4,9 @@ import { RecommendationCard } from '@/components/wizard/RecommendationCard';
 import { WizardColors, WizardFonts } from '@/constants/theme';
 import { useWizard } from '@/contexts/WizardContext';
 import { useApiClient } from '@/services/apiClient';
-import { Audio } from 'expo-av';
+import { createAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,27 +14,33 @@ export default function DashboardScreen() {
   const router = useRouter();
   const { analysis, resetWizard, capturedImage, profile, t } = useWizard();
   const apiClient = useApiClient();
+  const audioPlayerRef = useRef<AudioPlayer | null>(null);
 
   useEffect(() => {
     if (analysis?.summary) {
       speakSummary(analysis.summary);
     }
+
+    // Cleanup audio player on unmount
+    return () => {
+      if (audioPlayerRef.current) {
+        try {
+          audioPlayerRef.current.remove();
+        } catch (error) {
+          console.error('Error removing audio player:', error);
+        }
+      }
+    };
   }, [analysis]);
 
   const speakSummary = async (text: string) => {
     try {
       const audioData = await apiClient.getTTS(text, profile.language);
       if (audioData) {
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: `data:audio/wav;base64,${audioData}` },
-          { shouldPlay: true }
-        );
-        // Automatically unload sound from memory when done
-        sound.setOnPlaybackStatusUpdate((status: any) => {
-          if (status.didJustFinish) {
-            sound.unloadAsync();
-          }
-        });
+        const audioSource = `data:audio/wav;base64,${audioData}`;
+        const player = createAudioPlayer(audioSource);
+        audioPlayerRef.current = player;
+        player.play();
       }
     } catch (error) {
       console.error('TTS Playback failed:', error);

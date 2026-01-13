@@ -10,7 +10,12 @@
       "Bash(powershell -Command:*)",
       "Bash(npx expo-doctor@latest)",
       "Bash(npm ls:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(findstr:*)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:expo.dev)",
+      "Bash(npm view:*)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

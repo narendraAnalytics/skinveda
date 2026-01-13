@@ -45,7 +45,6 @@ export default function RootLayout() {
         <Stack.Screen name="profile" options={{ headerShown: false }} />
         <Stack.Screen name="(wizard)" options={{ headerShown: false }} />
         <Stack.Screen name="history" options={{ headerShown: false }} />
-        <Stack.Screen name="analysis" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ClerkProvider>

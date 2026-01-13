@@ -1,12 +1,12 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { ResizeMode, Video } from 'expo-av';
 import { Image } from 'expo-image';
 import * as NavigationBar from 'expo-navigation-bar';
 import { useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useRef, useState } from 'react';
+import { VideoView, useVideoPlayer } from 'expo-video';
+import { useEffect, useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const { width, height } = Dimensions.get('screen');
@@ -17,15 +17,27 @@ export default function GradientScreen() {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [logoLoaded, setLogoLoaded] = useState(false);
   const [flowerLoaded, setFlowerLoaded] = useState(false);
-  const videoRef = useRef<Video>(null);
   const router = useRouter();
   const { isSignedIn, user, isLoaded } = useUser();
   const { signOut } = useAuth();
 
+  // Create video player with expo-video
+  const player = useVideoPlayer(require('../public/video/video.mp4'), player => {
+    player.loop = true;
+    player.muted = true;
+    player.play();
+    setVideoLoaded(true);
+  });
+
+  // Update muted state when user toggles
+  useEffect(() => {
+    if (player) {
+      player.muted = isMuted;
+    }
+  }, [isMuted, player]);
+
   useEffect(() => {
     NavigationBar.setVisibilityAsync('hidden');
-    NavigationBar.setBehaviorAsync('overlay-swipe');
-    NavigationBar.setBackgroundColorAsync('#000000');
   }, []);
 
   // Hide splash screen when all assets are loaded
@@ -56,18 +68,14 @@ export default function GradientScreen() {
     <TouchableWithoutFeedback onPress={toggleUI}>
       <View style={styles.container}>
       <StatusBar style="light" translucent />
-      <Video
-        ref={videoRef}
-        source={require('../public/video/video.mp4')}
-        style={styles.fullScreenVideo}
-        resizeMode={ResizeMode.COVER}
-        shouldPlay={true}
-        isLooping={true}
-        isMuted={isMuted}
-        useNativeControls={false}
-        onLoad={() => setVideoLoaded(true)}
-        onReadyForDisplay={() => setVideoLoaded(true)}
-      />
+      {player && (
+        <VideoView
+          player={player}
+          style={styles.fullScreenVideo}
+          nativeControls={false}
+          contentFit="cover"
+        />
+      )}
       <View style={styles.overlay} />
       <TouchableOpacity
         style={styles.muteButton}

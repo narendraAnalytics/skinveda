@@ -11,7 +11,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Authentication**: Clerk v2.19.14 with OAuth support (Google, GitHub, LinkedIn)
 - **Backend**: Node.js/Express with TypeScript
 - **Database**: Neon PostgreSQL with Drizzle ORM 0.45.1
-- **AI Engine**: Google Gemini API (gemini-3-flash-preview for analysis, gemini-2.5-flash-preview-tts for voice)
+- **AI Engine**: Google Gemini API (gemini-3-flash-preview for analysis & transcription, gemini-2.5-flash-preview-tts for voice)
+- **Multilingual**: Supports English, Hindi, Marathi, Kannada, Tamil, Telugu with full UI translation and voice input/output
 - **Package**: `com.saasaideveloper.skinveda`
 
 ## Development Commands
@@ -146,8 +147,11 @@ backend/
 - `DELETE /api/analyses/:id` - Delete analysis (requires auth)
   - Returns: `{ success: true, message: string }`
 - `POST /api/tts` - Text-to-speech (requires Clerk auth token)
-  - Body: `{ text: string }`
+  - Body: `{ text: string, language?: string }`
   - Returns: `{ audioBase64: string }`
+- `POST /api/transcribe` - Speech-to-text audio transcription (requires auth)
+  - Body: `{ audioBase64: string, mimeType?: string, language?: string }`
+  - Returns: `{ success: true, text: string }`
 
 **CORS Configuration:**
 
@@ -245,7 +249,7 @@ Key methods:
 
 ```typescript
 {
-  profile: UserProfile,          // Name, age, gender, skin type, concerns, health
+  profile: UserProfile,          // Name, age, gender, skin type, concerns, health, language
   capturedImage: string | null,  // Base64 image from camera
   analysis: AnalysisResult | null, // AI analysis results
   currentStep: number,           // Current wizard step (0-6)
@@ -282,8 +286,11 @@ const analysis = await apiClient.getAnalysisById(id);
 // Delete analysis
 await apiClient.deleteAnalysis(id);
 
-// Get TTS audio
-const audioBase64 = await apiClient.getTTS("Hello world");
+// Get TTS audio (with optional language)
+const audioBase64 = await apiClient.getTTS("Hello world", "en");
+
+// Transcribe audio (with optional language)
+const text = await apiClient.transcribeAudio(audioBase64, "audio/m4a", "hi");
 ```
 
 ### Component Organization
@@ -303,7 +310,8 @@ components/
     ├── CameraView.tsx           # Camera with face guide overlay
     ├── MetricBar.tsx            # Horizontal metric bar (0-100)
     ├── MetricCard.tsx           # Score card with icon
-    └── RecommendationCard.tsx   # Collapsible recommendation section
+    ├── RecommendationCard.tsx   # Collapsible recommendation section
+    └── VoiceInputButton.tsx     # Voice input with recording indicator
 
 contexts/
 └── WizardContext.tsx            # Wizard state management
@@ -321,7 +329,8 @@ hooks/
 
 constants/
 ├── theme.ts                     # Design system colors & fonts
-└── wizardOptions.ts             # Wizard dropdown options & text
+├── wizardOptions.ts             # Wizard dropdown options & text
+└── translations.ts              # Multilingual UI translations (en, hi, mr, kn, ta, te)
 ```
 
 ## Design System
@@ -435,6 +444,8 @@ redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' })
 | `react-native-reanimated` | Animations |
 | `@react-native-async-storage/async-storage` | Wizard state persistence |
 | `@google/genai` | Type definitions (shared with backend) |
+| `expo-av` | Audio recording for voice input |
+| `expo-file-system` | Audio file handling |
 
 ### Backend
 
@@ -467,6 +478,7 @@ redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' })
 - Prompt: Acts as "Holistic Dermatologist and Ayurvedic Skin Specialist"
 - Health data conditioning: Adjusts recommendations based on sleep, heart rate, steps
 - Tools: Google Search enabled for latest dermatology research
+- Language-aware: Analysis generated in user's selected language (profile.language)
 
 **Response Schema:**
 
@@ -499,8 +511,51 @@ redirectUrl: Linking.createURL('/(auth)/sign-up', { scheme: 'skinveda' })
 
 - Model: `gemini-2.5-flash-preview-tts`
 - Voice: `Kore` (prebuilt voice)
-- Output: Base64-encoded audio
-- Used for narrating wizard steps (not yet implemented in UI)
+- Output: Base64-encoded WAV audio (converted from PCM)
+- Language support: Automatically speaks in the user's selected language
+- Used throughout wizard for step narration and results reading
+
+**Speech-to-Text (Transcription):**
+
+- Model: `gemini-3-flash-preview`
+- Input: Base64-encoded audio (supports audio/m4a, audio/wav)
+- Output: Transcribed text in the specified language
+- VoiceInputButton component handles recording, encoding, and API calls
+- Language-aware transcription for English, Hindi, Marathi, Kannada, Tamil, Telugu
+
+### Multilingual System
+
+**Supported Languages:**
+
+- English (en)
+- Hindi (hi)
+- Marathi (mr)
+- Kannada (kn)
+- Tamil (ta)
+- Telugu (te)
+
+**Translation Architecture** (`constants/translations.ts`):
+
+- Centralized translation dictionary keyed by language code
+- All wizard UI text, button labels, and screen headers translated
+- Language selection on welcome screen, stored in `profile.language`
+- Translations applied via helper function: `t(key, language)`
+
+**Language Flow:**
+
+1. User selects language on welcome screen (`app/(wizard)/welcome.tsx`)
+2. Language stored in WizardContext profile
+3. All screens read `profile.language` to display translated UI
+4. AI analysis results generated in user's selected language
+5. TTS narration speaks in user's selected language
+6. Voice input transcription understands user's selected language
+
+**Adding a New Language:**
+
+1. Add language code to translation object in `constants/translations.ts`
+2. Translate all keys (welcome, buttons, labels, etc.)
+3. Language automatically available in welcome screen dropdown
+4. Gemini AI will generate analysis and speak in the new language
 
 ### OAuth Sign-Up Flow
 
@@ -710,6 +765,42 @@ const analysis = await dbService.getAnalysisById(id, userId);
 4. Push to database: `npx drizzle-kit push`
 5. Update TypeScript types in `backend/src/types/index.ts`
 
+### Using Voice Input
+
+```typescript
+import { VoiceInputButton } from '@/components/wizard/VoiceInputButton';
+
+// In your component
+<VoiceInputButton
+  onTranscript={(text) => {
+    // Handle transcribed text
+    setInputValue(text);
+  }}
+  disabled={false}
+/>
+```
+
+**Behavior:**
+- Requests microphone permission on first use
+- Shows recording indicator while listening
+- Automatically transcribes in user's selected language
+- Returns transcribed text via callback
+- Handles errors with user-friendly alerts
+
+### Using Translations
+
+```typescript
+import { TRANSLATIONS } from '@/constants/translations';
+import { useWizard } from '@/contexts/WizardContext';
+
+const { profile } = useWizard();
+const t = (key: string) => TRANSLATIONS[profile.language]?.[key] || TRANSLATIONS.en[key];
+
+// Use in JSX
+<Text>{t('welcome')}</Text>
+<Button title={t('continue')} />
+```
+
 ## Testing & Quality
 
 - **Linting**: ESLint with `eslint-config-expo`
@@ -718,10 +809,10 @@ const analysis = await dbService.getAnalysisById(id, userId);
 
 ## Known Issues & Future Work
 
-- TTS voice narration not yet integrated in wizard UI (backend ready)
 - Face detection overlay is placeholder (ML Kit integration needed)
 - No analytics/error tracking configured
 - Dashboard "Share Results" feature not implemented
 - No backend deployment configuration (currently local only)
 - Health data integration (wearables) not yet implemented
 - Analysis images are not currently stored in database (only metrics/recommendations)
+- More language support could be added (Spanish, French, etc.)

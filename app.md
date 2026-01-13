@@ -1,3 +1,42 @@
+Step 1: Clean existing installation
+
+# For PowerShell
+
+  Remove-Item -Recurse -Force node_modules, package-lock.json
+
+# OR if using Git Bash/Command Prompt
+
+  rmdir /s /q node_modules
+  del package-lock.json
+
+  Step 2: Clean npm cache
+
+  npm cache clean --force
+
+  Step 3: Reinstall with correct React version
+
+  npm install --legacy-peer-deps
+
+  Step 4: Verify the fix worked
+
+  npm ls react react-dom
+
+  You should see:
+
+- react@18.3.1 (no "invalid" warnings)
+- react-dom@18.3.1
+
+  ---
+  That's it! After these commands:
+
+- TypeScript errors will stay resolved
+- APK builds will work without the React version error
+- Your app code works exactly the same as before
+
+  Let me know once you've run these commands and I'll help verify everything is working correctly!
+
+----------------------------------------------------------------
+
 # Skinveda Documentation
 
 **Your Personal Skincare Companion**
@@ -67,18 +106,22 @@ skinveda/
 The app uses a fully customized Clerk implementation for a seamless, branded user experience.
 
 ### ⚙️ Initialization
+
 The `ClerkProvider` is configured in `app/_layout.tsx` with a custom `tokenCache` using `expo-secure-store` for persistent user sessions.
 
 ### 🛡 Auth Guard
+
 Navigation is protected in `app/(auth)/_layout.tsx`. Signed-in users are automatically redirected away from auth screens to the root home page (`/`).
 
 ### 📝 Custom Flows
 
 #### **Sign-In (`app/(auth)/sign-in.tsx`)**
+
 - Supports both email/password and social logins.
 - Uses `useSignIn` hook for the logic and `useOAuth` for social providers.
 
 #### **Sign-Up & OAuth (`app/(auth)/sign-up.tsx`)**
+
 Skinveda implements a unique flow for social logins to ensure complete user profiles:
 
 1. **Standard Sign-Up**: Traditional email/password with verification code.
@@ -93,12 +136,15 @@ Skinveda implements a unique flow for social logins to ensure complete user prof
 ## 🚀 Development
 
 ### Essential Commands
+
 - `npm start`: Launch the Expo development server.
 - `npm run android`: Run on an Android emulator.
 - `npm run ios`: Run on an iOS simulator.
 
 ### Environment Setup
+
 Create a `.env` file in the root with:
+
 ```bash
 EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 ```
@@ -106,6 +152,7 @@ EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 ---
 
 ## 💎 Design System
+
 - **Primary Color**: `#E8B4B8` (Soft Mauve/Rose)
 - **Background**: `#1a1a1a` (Modern Dark Theme)
 - **Interactive**: Glassmorphism effects with semi-transparent backgrounds and themed borders.
@@ -117,22 +164,31 @@ EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 The following reusable components are located in the `components/` directory and ensure consistency across the application.
 
 ### 🔘 `OAuthButton`
+
 A specialized button for social authentication.
+
 - **Props**: `provider` ('google', 'github', 'linkedin'), `onPress`, `disabled`, `loading`.
 - **Features**: Automatic icon selection and thematic coloring based on the provider.
 
 ### 🎨 Themed Components (`ThemedText` & `ThemedView`)
+
 Used for maintaining a consistent dark/light theme experience.
+
 - These components use the `useThemeColor` hook to pick colors from `constants/theme.ts`.
 - **ThemedText Types**: `title`, `subtitle`, `defaultSemiBold`, `link`, and `default`.
 
 ### 📄 `ProfileInfoRow`
+
 Used in the user profile/settings screens to display user data in a clean, consistent row.
+
 - **Props**: `icon` (MaterialCommunityIcons), `label`, `value`.
 
 ### 🔗 `ExternalLink`
+
 A utility component for cross-platform linking.
+
 - **Features**: Opens links in an in-app browser on native devices (Android/iOS) while maintaining standard link behavior on Web.
+
 ---
 
 ## 📦 AI Dependencies
@@ -152,6 +208,7 @@ Skinveda integrates advanced AI capabilities from the `workingcode` directory to
 ### 🧠 Core AI Services
 
 #### **Skin Analysis & Transcription (`services/geminiService.ts`)**
+
 - **Engine**: `gemini-3-flash-preview`
 - **Capabilities**:
   - **Multimodal Analysis**: Processes user profiles and Base64 face images to provide clinical skin metrics.
@@ -160,55 +217,57 @@ Skinveda integrates advanced AI capabilities from the `workingcode` directory to
 - **TTS Engine**: `gemini-2.5-flash-preview-tts` (Voice: `Kore`)
 
 #### **Voice Assistance Implementation**
+
 - **Component**: `VoiceInputButton.tsx`
 - **MIME Type**: `audio/m4a` (Native Expo-AV recording format)
 - **Features**: Automatic numeric extraction for the age field (converts "twenty-five" to "25").
 
 ### 🛠 Troubleshooting: Voice Fixes (2026 Update)
+
 If voice transcription fails (e.g., `404 Not Found` or `API Error`):
+
 1. **Model Standardization**: Ensure the backend uses `gemini-3-flash-preview` and `gemini-2.5-flash-preview-tts`. Older `1.5-flash` models may not be available in certain environments.
 2. **Format Mismatch**: The backend expects `audio/m4a` when processing Expo's native audio recordings. Labeling as `audio/wav` will cause processing errors.
 3. **Network Config**: Ensure `EXPO_PUBLIC_BACKEND_URL` in `.env` uses your machine's local IP (e.g., `192.168.x.x`) so physical devices can reach the backend.
 
 ### 📋 Integration Flow
 
-1.  **Data Synchronization**: 
+1. **Data Synchronization**:
     - The app attempts to sync from **Apple HealthKit** or **Google Fit** (Sleep, Steps, BPM).
     - **Manual Override**: Users can manually adjust these values if wearables are unavailable.
-2.  **Photo Capture**: Integrated UI with guidance for high-quality facial capture.
-3.  **Deep Reasoning**: AI analyzes the combined data (Wearables + Image + Profile).
-4.  **Dashboard**: Displays clinical scores (Acne, Hydration, Lines, etc.) and the holistic routine.
+2. **Photo Capture**: Integrated UI with guidance for high-quality facial capture.
+3. **Deep Reasoning**: AI analyzes the combined data (Wearables + Image + Profile).
+4. **Dashboard**: Displays clinical scores (Acne, Hydration, Lines, etc.) and the holistic routine.
 
 ---
 
-
 Made the language field optional in the UserProfile type definition to prevent errors without requiring database changes.
-
 
 Multi-language Support Implementation
 I have successfully implemented multi-language support in the Skinveda application. Users can now select their preferred language during the welcome step, and the entire app experience—including UI text, voice input, and AI analysis results—will be presented in that language.
 
 Key Changes
+
 1. Language Selection UI
-Integrated a language selection grid on the 
+Integrated a language selection grid on the
 welcome.tsx
  screen.
 Supported languages: English, Hindi, Telugu, Marathi, and Kannada.
-The selected language is persisted in the 
+The selected language is persisted in the
 UserProfile
- within the 
+ within the
 WizardContext
 .
 2. Localization Infrastructure
-Created 
+Created
 translations.ts
  containing all app strings for supported languages.
-Added a 
+Added a
 t()
- (translation) helper function to 
+ (translation) helper function to
 WizardContext.tsx
 .
-Updated the 
+Updated the
 UserProfile
  interface to include the language field.
 3. Wizard Screen Updates
@@ -221,12 +280,12 @@ skin-details.tsx
 concerns-health.tsx
 photo-capture.tsx
 4. Language-Aware AI Integration
-Skin Analysis: The backend 
+Skin Analysis: The backend
 geminiService.ts
  now includes the user's language in the prompt, forcing Gemini to return the analysis summary and recommendations in that language.
-Text-to-Speech (TTS): The dashboard now automatically reads out the analysis summary in the selected language using the updated 
+Text-to-Speech (TTS): The dashboard now automatically reads out the analysis summary in the selected language using the updated
 getTTS
  method.
-Audio Transcription: The 
+Audio Transcription: The
 VoiceInputButton.tsx
  now passes the user's language to the backend, enabling accurate transcription of non-English speech.

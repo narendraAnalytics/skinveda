@@ -59,39 +59,39 @@ export function CameraView({ onCapture }: CameraViewProps) {
         ref={cameraRef}
         style={styles.camera}
         facing="front"
-      >
-        {/* Face Guide Overlay */}
-        <View style={styles.overlay}>
-          <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
-            <Ellipse
-              cx="50%"
-              cy="45%"
-              rx="40%"
-              ry="30%"
-              stroke="#FFFFFF"
-              strokeWidth="3"
-              strokeDasharray="10, 5"
-              fill="transparent"
-              opacity={0.6}
-            />
-          </Svg>
+      />
 
-          <Text style={styles.guideText}>
-            Position your face within the oval
-          </Text>
-        </View>
+      {/* Face Guide Overlay */}
+      <View style={styles.overlay}>
+        <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
+          <Ellipse
+            cx="50%"
+            cy="45%"
+            rx="40%"
+            ry="30%"
+            stroke="#FFFFFF"
+            strokeWidth="3"
+            strokeDasharray="10, 5"
+            fill="transparent"
+            opacity={0.6}
+          />
+        </Svg>
 
-        {/* Capture Button */}
-        <View style={styles.controls}>
-          <TouchableOpacity
-            style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
-            onPress={takePicture}
-            disabled={isCapturing}
-          >
-            <View style={styles.captureButtonInner} />
-          </TouchableOpacity>
-        </View>
-      </ExpoCamera>
+        <Text style={styles.guideText}>
+          Position your face within the oval
+        </Text>
+      </View>
+
+      {/* Capture Button */}
+      <View style={styles.controls}>
+        <TouchableOpacity
+          style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
+          onPress={takePicture}
+          disabled={isCapturing}
+        >
+          <View style={styles.captureButtonInner} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
