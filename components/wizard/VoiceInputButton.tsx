@@ -4,6 +4,7 @@ import { useApiClient } from '@/services/apiClient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Haptics from 'expo-haptics';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -41,6 +42,7 @@ export function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonPro
 
       console.log('[VoiceInput] Starting record command...');
       audioRecorder.record();
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       setIsRecording(true);
       console.log('[VoiceInput] Local state set to RECORDING');
     } catch (error: any) {
@@ -57,6 +59,7 @@ export function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonPro
     try {
       console.log('[VoiceInput] Stopping recorder...');
       await audioRecorder.stop();
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       console.log('[VoiceInput] Recorder stopped successfully.');
 
       const uri = audioRecorder.uri;
@@ -79,11 +82,14 @@ export function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonPro
       console.log('[VoiceInput] Transcription result received');
 
       if (text) {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         onTranscript(text);
       } else {
+        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         Alert.alert('No Speech Detected', 'Please try speaking again.');
       }
     } catch (error: any) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error('[VoiceInput] Stop/Transcription error:', error);
       Alert.alert('Error', `Failed to process voice: ${error.message || 'Unknown error'}`);
     } finally {

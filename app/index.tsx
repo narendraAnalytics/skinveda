@@ -1,5 +1,6 @@
 import { useAuth, useUser } from '@clerk/clerk-expo';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import * as NavigationBar from 'expo-navigation-bar';
 import { useRouter } from 'expo-router';
@@ -58,6 +59,7 @@ export default function GradientScreen() {
 
   const handleSignOut = async () => {
     try {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       await signOut();
     } catch (error) {
       console.error('Sign out error:', error);
@@ -67,108 +69,123 @@ export default function GradientScreen() {
   return (
     <TouchableWithoutFeedback onPress={toggleUI}>
       <View style={styles.container}>
-      <StatusBar style="light" translucent />
-      {player && (
-        <VideoView
-          player={player}
-          style={styles.fullScreenVideo}
-          nativeControls={false}
-          contentFit="cover"
-        />
-      )}
-      <View style={styles.overlay} />
-      <TouchableOpacity
-        style={styles.muteButton}
-        onPress={() => setIsMuted(!isMuted)}
-      >
-        <MaterialCommunityIcons
-          name={isMuted ? 'volume-mute' : 'volume-high'}
-          size={24}
-          color="#E8B4B8"
-        />
-      </TouchableOpacity>
-      {isSignedIn && user && (
-        <>
-          <TouchableOpacity
-            style={styles.profileButtonTop}
-            onPress={() => router.push('/profile')}
-          >
-            <MaterialCommunityIcons
-              name="account-circle"
-              size={24}
-              color="#E8B4B8"
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.historyButtonTop}
-            onPress={() => router.push('/history')}
-          >
-            <MaterialCommunityIcons
-              name="history"
-              size={24}
-              color="#E8B4B8"
-            />
-          </TouchableOpacity>
-        </>
-      )}
-      <Image
-        source={require('../public/images/logoskinveda.png')}
-        style={styles.logo}
-        contentFit="contain"
-        onLoad={() => setLogoLoaded(true)}
-      />
-      <Text style={styles.tagline}>From face scan to skin wisdom</Text>
-      <View style={styles.textOverlay}>
-        <Text style={styles.text}>Your Personal skincare</Text>
-        <View style={styles.companionRow}>
-          <Text style={styles.text}>companion</Text>
-          <Image
-            source={require('../public/images/flowerimage.png')}
-            style={styles.flowerIcon}
-            contentFit="contain"
-            onLoad={() => setFlowerLoaded(true)}
+        <StatusBar style="light" translucent />
+        {player && (
+          <VideoView
+            player={player}
+            style={styles.fullScreenVideo}
+            nativeControls={false}
+            contentFit="cover"
           />
-        </View>
-      </View>
-      <View style={styles.buttonContainer}>
-        {!isLoaded ? (
-          <View style={styles.loadingContainer}>
-            <Text style={styles.loadingText}>Loading...</Text>
-          </View>
-        ) : isSignedIn && user ? (
+        )}
+        <View style={styles.overlay} />
+        <TouchableOpacity
+          style={styles.muteButton}
+          onPress={async () => {
+            await Haptics.selectionAsync();
+            setIsMuted(!isMuted);
+          }}
+        >
+          <MaterialCommunityIcons
+            name={isMuted ? 'volume-mute' : 'volume-high'}
+            size={24}
+            color="#E8B4B8"
+          />
+        </TouchableOpacity>
+        {isSignedIn && user && (
           <>
             <TouchableOpacity
-              style={styles.welcomeContainer}
-              onPress={() => router.push('/(wizard)/welcome')}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.welcomeText}>
-                Welcome, {user.username || user.firstName || 'there'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.signOutButton}
-              onPress={handleSignOut}
+              style={styles.profileButtonTop}
+              onPress={async () => {
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/profile');
+              }}
             >
               <MaterialCommunityIcons
-                name="logout"
-                size={18}
-                color="#FF6B6B"
-                style={{ marginRight: 6 }}
+                name="account-circle"
+                size={24}
+                color="#E8B4B8"
               />
-              <Text style={styles.signOutText}>Sign Out</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.historyButtonTop}
+              onPress={async () => {
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push('/history');
+              }}
+            >
+              <MaterialCommunityIcons
+                name="history"
+                size={24}
+                color="#E8B4B8"
+              />
             </TouchableOpacity>
           </>
-        ) : (
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => router.push('/(auth)/sign-up')}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.buttonText}>Glow Guide</Text>
-          </TouchableOpacity>
         )}
-      </View>
+        <Image
+          source={require('../public/images/logoskinveda.png')}
+          style={styles.logo}
+          contentFit="contain"
+          onLoad={() => setLogoLoaded(true)}
+        />
+        <Text style={styles.tagline}>From face scan to skin wisdom</Text>
+        <View style={styles.textOverlay}>
+          <Text style={styles.text}>Your Personal skincare</Text>
+          <View style={styles.companionRow}>
+            <Text style={styles.text}>companion</Text>
+            <Image
+              source={require('../public/images/flowerimage.png')}
+              style={styles.flowerIcon}
+              contentFit="contain"
+              onLoad={() => setFlowerLoaded(true)}
+            />
+          </View>
+        </View>
+        <View style={styles.buttonContainer}>
+          {!isLoaded ? (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Loading...</Text>
+            </View>
+          ) : isSignedIn && user ? (
+            <>
+              <TouchableOpacity
+                style={styles.welcomeContainer}
+                onPress={async () => {
+                  await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                  router.push('/(wizard)/welcome');
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.welcomeText}>
+                  Welcome, {user.username || user.firstName || 'there'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.signOutButton}
+                onPress={handleSignOut}
+              >
+                <MaterialCommunityIcons
+                  name="logout"
+                  size={18}
+                  color="#FF6B6B"
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.signOutText}>Sign Out</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <TouchableOpacity
+              style={styles.button}
+              onPress={async () => {
+                await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push('/(auth)/sign-up');
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.buttonText}>Glow Guide</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
     </TouchableWithoutFeedback>
   );

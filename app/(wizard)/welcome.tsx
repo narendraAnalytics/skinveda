@@ -3,6 +3,7 @@ import { WizardColors, WizardFonts } from '@/constants/theme';
 import { LANGUAGES } from '@/constants/translations';
 import { useWizard } from '@/contexts/WizardContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -11,7 +12,8 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const { setCurrentStep, profile, updateProfile, resetWizard, t } = useWizard();
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     resetWizard(true);
     setCurrentStep(1);
     router.push('/(wizard)/profile-name');
@@ -58,7 +60,10 @@ export default function WelcomeScreen() {
                       styles.languageButton,
                       profile.language === lang.id && styles.languageButtonActive
                     ]}
-                    onPress={() => updateProfile({ language: lang.id })}
+                    onPress={async () => {
+                      await Haptics.selectionAsync();
+                      updateProfile({ language: lang.id });
+                    }}
                   >
                     <Text style={[
                       styles.languageText,

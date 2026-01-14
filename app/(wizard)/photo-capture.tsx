@@ -3,6 +3,7 @@ import { ProgressBar } from '@/components/wizard/ProgressBar';
 import { WizardColors } from '@/constants/theme';
 import { useWizard } from '@/contexts/WizardContext';
 import { useApiClient } from '@/services/apiClient';
+import * as Haptics from 'expo-haptics';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -39,6 +40,7 @@ export default function PhotoCaptureScreen() {
 
     setIsAnalyzing(true);
     setCurrentStep(7);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
       // Remove data URL prefix for backend
@@ -46,8 +48,10 @@ export default function PhotoCaptureScreen() {
 
       const result = await apiClient.analyzeSkin(profile, base64Image);
       setAnalysis(result);
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.push('/(wizard)/dashboard');
     } catch (error: any) {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       console.error('Analysis failed:', error);
       const message = error.message === 'Network request failed'
         ? 'Could not connect to analysis server. Please ensure the backend is running and your EXPO_PUBLIC_BACKEND_URL is correct.'
