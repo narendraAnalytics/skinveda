@@ -2,7 +2,7 @@ import { WizardColors } from '@/constants/theme';
 import { useWizard } from '@/contexts/WizardContext';
 import { useApiClient } from '@/services/apiClient';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useAudioRecorder, AudioModule, RecordingPresets } from 'expo-audio';
+import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } from 'expo-audio';
 import * as FileSystem from 'expo-file-system/legacy';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -16,42 +16,54 @@ export function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonPro
   const { profile } = useWizard();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  const audioRecorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY, (status) => {
+    console.log('[VoiceInput] Hook Status Sync:', JSON.stringify(status));
+  });
   const apiClient = useApiClient();
 
   const startRecording = async () => {
     try {
-      // Request permissions
+      console.log('[VoiceInput] Requesting permissions...');
       const permission = await AudioModule.requestRecordingPermissionsAsync();
       if (!permission.granted) {
         Alert.alert('Permission Required', 'Microphone permission is required for voice input');
         return;
       }
 
-      // Start recording
-      await audioRecorder.record();
+      console.log('[VoiceInput] Configuring audio mode...');
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+        allowsRecording: true,
+      });
+
+      console.log('[VoiceInput] Preparing recording...');
+      await audioRecorder.prepareToRecordAsync();
+
+      console.log('[VoiceInput] Starting record command...');
+      audioRecorder.record();
       setIsRecording(true);
-    } catch (error) {
-      console.error('Failed to start recording:', error);
-      Alert.alert('Error', 'Failed to start recording. Please try again.');
+      console.log('[VoiceInput] Local state set to RECORDING');
+    } catch (error: any) {
+      console.error('[VoiceInput] Failed to start recording:', error);
+      Alert.alert('Error', `Failed to start recording: ${error.message}`);
     }
   };
 
   const stopRecording = async () => {
+    console.log('[VoiceInput] stopRecording called. Current isRecording:', isRecording);
+    setIsRecording(false);
+    setIsProcessing(true);
+
     try {
-      if (!audioRecorder.isRecording) return;
-
-      setIsRecording(false);
-      setIsProcessing(true);
-
-      // Stop recording
-      console.log('[VoiceInput] Stopping recording...');
+      console.log('[VoiceInput] Stopping recorder...');
       await audioRecorder.stop();
+      console.log('[VoiceInput] Recorder stopped successfully.');
+
       const uri = audioRecorder.uri;
-      console.log('[VoiceInput] Recording URI:', uri);
+      console.log('[VoiceInput] Final URI:', uri);
 
       if (!uri) {
-        throw new Error('No recording URI');
+        throw new Error('Recording resulted in no file (URI is empty)');
       }
 
       // Read file as base64 using expo-file-system
@@ -59,33 +71,42 @@ export function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonPro
       const base64 = await FileSystem.readAsStringAsync(uri, {
         encoding: 'base64',
       });
+      console.log('[VoiceInput] Base64 length:', base64.length);
 
       // Send to backend for transcription
-      console.log('[VoiceInput] Sending to backend for transcription...');
-      console.log('[VoiceInput] Transcribing with language:', profile.language);
+      console.log('[VoiceInput] Sending to backend. Lang:', profile.language);
       const text = await apiClient.transcribeAudio(base64, 'audio/m4a', profile.language);
-      console.log('[VoiceInput] Transcription result:', text);
+      console.log('[VoiceInput] Transcription result received');
 
       if (text) {
         onTranscript(text);
       } else {
         Alert.alert('No Speech Detected', 'Please try speaking again.');
       }
-
-      setIsProcessing(false);
     } catch (error: any) {
-      console.error('Transcription error:', error);
-      console.error('Error details:', error.message, error.stack);
+      console.error('[VoiceInput] Stop/Transcription error:', error);
+      Alert.alert('Error', `Failed to process voice: ${error.message || 'Unknown error'}`);
+    } finally {
       setIsProcessing(false);
-      Alert.alert('Error', `Failed to transcribe audio: ${error.message || 'Please try again.'}`);
     }
   };
 
-  const handlePress = () => {
-    if (isRecording) {
-      stopRecording();
-    } else {
-      startRecording();
+  const handlePress = async () => {
+    console.log('[VoiceInput] handlePress - start. isRecording:', isRecording, 'isProcessing:', isProcessing);
+    if (isProcessing) return;
+
+    try {
+      if (isRecording) {
+        console.log('[VoiceInput] Transitioning to STOP');
+        await stopRecording();
+      } else {
+        console.log('[VoiceInput] Transitioning to START');
+        await startRecording();
+      }
+    } catch (err) {
+      console.error('[VoiceInput] Error in handlePress:', err);
+      setIsProcessing(false);
+      setIsRecording(false);
     }
   };
 

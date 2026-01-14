@@ -12,8 +12,12 @@ export async function handleTranscribe(req: Request, res: Response) {
   try {
     const { audioBase64, mimeType, language } = transcribeSchema.parse(req.body);
 
+    console.log(`[Transcription] Request received: lang=${language}, mime=${mimeType}, size=${Math.round(audioBase64.length / 1024)}KB`);
+
     const service = new SkinAnalysisService();
     const text = await service.transcribeAudio(audioBase64, mimeType, language || 'en');
+
+    console.log(`[Transcription] Result: "${text}"`);
 
     res.json({
       success: true,

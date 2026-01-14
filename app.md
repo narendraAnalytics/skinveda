@@ -224,11 +224,19 @@ Skinveda integrates advanced AI capabilities from the `workingcode` directory to
 
 ### 🛠 Troubleshooting: Voice Fixes (2026 Update)
 
-If voice transcription fails (e.g., `404 Not Found` or `API Error`):
+During the migration to `expo-audio`, several critical blockers were resolved to ensure reliable Speech-to-Text:
 
-1. **Model Standardization**: Ensure the backend uses `gemini-3-flash-preview` and `gemini-2.5-flash-preview-tts`. Older `1.5-flash` models may not be available in certain environments.
-2. **Format Mismatch**: The backend expects `audio/m4a` when processing Expo's native audio recordings. Labeling as `audio/wav` will cause processing errors.
-3. **Network Config**: Ensure `EXPO_PUBLIC_BACKEND_URL` in `.env` uses your machine's local IP (e.g., `192.168.x.x`) so physical devices can reach the backend.
+1. **Recorder Initialization**: Added `await audioRecorder.prepareToRecordAsync()` before calling `record()`. In `expo-audio`, the recorder must be explicitly prepared to allocate resources and set the output file URI.
+2. **FileSystem Compatibility**: In newer Expo environments, the `readAsStringAsync` method is deprecated in the main entry point. Fixed by using the legacy import: `import * as FileSystem from 'expo-file-system/legacy'`.
+3. **Audio Mode Configuration**: Used the top-level `setAudioModeAsync` from `expo-audio` to correctly configure recording permissions and background playback:
+   ```typescript
+   await setAudioModeAsync({
+     playsInSilentMode: true,
+     allowsRecording: true,
+   });
+   ```
+4. **State Management**: Implemented a local `isRecording` state as the source of truth for the UI (pulsing indicator, "Listening" text), as hook-based status sync can occasionally lag behind the native recorder state.
+5. **MIME Type Alignment**: Hardcoded `audio/m4a` to match Expo's native recording format, ensuring the Gemini backend handles the encoding correctly without bitstream errors.
 
 ### 📋 Integration Flow
 

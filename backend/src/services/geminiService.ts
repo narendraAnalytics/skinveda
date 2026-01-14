@@ -148,16 +148,24 @@ export class SkinAnalysisService {
   }
 
   async transcribeAudio(audioBase64: string, mimeType: string = 'audio/wav', language: string = 'en'): Promise<string> {
-    const response = await this.ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: [{
-        parts: [
-          { text: `Transcribe this audio clearly in ${language}. Format any spoken numbers as digits (e.g., "36" instead of "thirty six"). Return only the spoken text without any formatting or extra words.` },
-          { inlineData: { mimeType, data: audioBase64 } }
-        ]
-      }]
-    });
+    try {
+      console.log(`[Gemini] Transcribing audio with model: gemini-3-flash-preview, language: ${language}, mime: ${mimeType}`);
+      const response = await this.ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: [{
+          parts: [
+            { text: `Transcribe this audio clearly in ${language}. Format any spoken numbers as digits (e.g., "36" instead of "thirty six"). Return only the spoken text without any formatting or extra words.` },
+            { inlineData: { mimeType, data: audioBase64 } }
+          ]
+        }]
+      });
 
-    return response.text?.trim() || '';
+      const text = response.text?.trim() || '';
+      console.log(`[Gemini] Transcription success. Length: ${text.length} chars`);
+      return text;
+    } catch (error: any) {
+      console.error(`[Gemini] Transcription error:`, error.message);
+      throw error;
+    }
   }
 }
