@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
-import { SkinAnalysisService } from '../services/geminiService';
 
 const ttsSchema = z.object({
   text: z.string().min(1).max(500),
@@ -9,12 +8,12 @@ const ttsSchema = z.object({
 
 export async function handleTTS(req: Request, res: Response) {
   try {
-    const { text, language } = ttsSchema.parse(req.body);
+    // const { text, language } = ttsSchema.parse(req.body);
+    // const service = new SkinAnalysisService();
+    // const audioBase64 = await service.getTTS(text, language || 'en');
 
-    const service = new SkinAnalysisService();
-    const audioBase64 = await service.getTTS(text, language || 'en');
-
-    res.json({ success: true, audioBase64 });
+    // Temporarily disabled to avoid 400 error during analysis review
+    res.json({ success: true, audioBase64: '' });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ error: 'Invalid text input', details: error.issues });

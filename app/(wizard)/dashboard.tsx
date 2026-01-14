@@ -17,9 +17,11 @@ export default function DashboardScreen() {
   const audioPlayerRef = useRef<AudioPlayer | null>(null);
 
   useEffect(() => {
+    /* 
     if (analysis?.summary) {
       speakSummary(analysis.summary);
     }
+    */
 
     // Cleanup audio player on unmount
     return () => {
