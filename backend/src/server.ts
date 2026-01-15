@@ -7,13 +7,24 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
 const allowedOrigins = [
-  'http://localhost:8081',
-  'http://localhost:19006',
-  'exp://localhost:8081'
+  'http://localhost:8081',           // Expo dev server
+  'http://localhost:19006',          // Web dev server
+  'exp://localhost:8081',            // Expo Go app
+  'https://skinveda.netlify.app',    // Production Netlify frontend
 ];
 
 app.use(cors({
-  origin: true, // Allow all origins in dev/test for easier mobile connectivity
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
