@@ -8,7 +8,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useEffect, useState } from 'react';
-import { Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const { width, height } = Dimensions.get('screen');
 
@@ -23,7 +23,12 @@ export default function GradientScreen() {
   const { signOut } = useAuth();
 
   // Create video player with expo-video
-  const player = useVideoPlayer(require('../public/video/video.mp4'), player => {
+  // Use different source for web vs native
+  const videoSource = Platform.OS === 'web'
+    ? { uri: '/video/video.mp4' }
+    : require('../public/video/video.mp4');
+
+  const player = useVideoPlayer(videoSource, player => {
     player.loop = true;
     player.muted = true;
     player.play();
