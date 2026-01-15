@@ -76,6 +76,7 @@ export default function GradientScreen() {
             style={styles.fullScreenVideo}
             nativeControls={false}
             contentFit="cover"
+            crossOrigin="anonymous"
           />
         )}
         <View style={styles.overlay} />

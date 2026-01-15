@@ -1,3 +1,6 @@
+🚀 When you are ready to deploy to production:
+  $ eas deploy --prod
+
 Step 1: Clean existing installation
 
 # For PowerShell
@@ -229,12 +232,14 @@ During the migration to `expo-audio`, several critical blockers were resolved to
 1. **Recorder Initialization**: Added `await audioRecorder.prepareToRecordAsync()` before calling `record()`. In `expo-audio`, the recorder must be explicitly prepared to allocate resources and set the output file URI.
 2. **FileSystem Compatibility**: In newer Expo environments, the `readAsStringAsync` method is deprecated in the main entry point. Fixed by using the legacy import: `import * as FileSystem from 'expo-file-system/legacy'`.
 3. **Audio Mode Configuration**: Used the top-level `setAudioModeAsync` from `expo-audio` to correctly configure recording permissions and background playback:
+
    ```typescript
    await setAudioModeAsync({
      playsInSilentMode: true,
      allowsRecording: true,
    });
    ```
+
 4. **State Management**: Implemented a local `isRecording` state as the source of truth for the UI (pulsing indicator, "Listening" text), as hook-based status sync can occasionally lag behind the native recorder state.
 5. **MIME Type Alignment**: Hardcoded `audio/m4a` to match Expo's native recording format, ensuring the Gemini backend handles the encoding correctly without bitstream errors.
 

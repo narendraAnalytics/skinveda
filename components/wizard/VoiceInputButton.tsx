@@ -6,7 +6,7 @@ import { AudioModule, RecordingPresets, setAudioModeAsync, useAudioRecorder } fr
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Haptics from 'expo-haptics';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface VoiceInputButtonProps {
   onTranscript: (text: string) => void;
@@ -117,6 +117,11 @@ export function VoiceInputButton({ onTranscript, disabled }: VoiceInputButtonPro
   };
 
   const isDisabled = disabled || isProcessing;
+
+  // Hide voice input on web - not supported due to platform-specific audio APIs
+  if (Platform.OS === 'web') {
+    return null;
+  }
 
   return (
     <View style={styles.container}>
