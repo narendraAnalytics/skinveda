@@ -1,0 +1,12 @@
+[build]
+  # Build command to run
+  command = "npm run build"
+
+  # Directory to deploy (build output)
+  publish = "dist"
+
+[[redirects]]
+  # SPA fallback: Serve index.html for all routes (client-side routing)
+  from = "/*"
+  to = "/index.html"
+  status = 200
