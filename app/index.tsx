@@ -3,11 +3,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
 import * as NavigationBar from 'expo-navigation-bar';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { VideoView, useVideoPlayer } from 'expo-video';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Dimensions, Platform, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 const { width, height } = Dimensions.get('screen');
@@ -34,6 +34,24 @@ export default function GradientScreen() {
     player.play();
     setVideoLoaded(true);
   });
+
+  // Pause video when screen loses focus (user navigates away)
+  // Resume video when screen gains focus (user returns)
+  useFocusEffect(
+    useCallback(() => {
+      // Screen gained focus - resume video
+      if (player && !player.playing) {
+        player.play();
+      }
+
+      // Cleanup: runs when screen loses focus
+      return () => {
+        if (player && player.playing) {
+          player.pause();
+        }
+      };
+    }, [player])
+  );
 
   // Update muted state when user toggles
   useEffect(() => {
