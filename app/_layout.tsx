@@ -5,6 +5,12 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 
+// Configure splash screen fade animation
+SplashScreen.setOptions({
+  duration: 1000,  // 1 second fade
+  fade: true,
+});
+
 // Prevent splash screen from auto-hiding before app is ready
 SplashScreen.preventAutoHideAsync();
 
